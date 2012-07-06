@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema version="1.0" xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	xmlns:jaxb="http://java.sun.com/xml/ns/jaxb" jaxb:version="1.0"
+	xmlns:xjc="http://java.sun.com/xml/ns/jaxb/xjc"
+	jaxb:extensionBindingPrefixes="xjc">
+	<xs:annotation>
+		<xs:appinfo>
+			<jaxb:globalBindings>
+				<xjc:simple />
+			</jaxb:globalBindings>
+		</xs:appinfo>
+	</xs:annotation>
+
+
+	<!-- Runtime type -->
+	<xs:simpleType name="runtime">
+		<xs:restriction base="xs:string" />
+	</xs:simpleType>
+
+	<xs:element name="runtime" type="runtime" />
+
+	<!-- Framework type -->
+	<xs:simpleType name="framework">
+		<xs:restriction base="xs:string" />
+	</xs:simpleType>
+
+	<xs:element name="framework" type="framework" />
+
+	<!-- Service type -->
+	<xs:simpleType name="service">
+		<xs:restriction base="xs:string" />
+	</xs:simpleType>
+
+	<xs:element name="service" type="service" />
+
+	<!-- Runtimes type -->
+	<xs:complexType name="runtimes">
+		<xs:sequence>
+			<xs:element type="runtime" name="runtime" maxOccurs="unbounded"
+				minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="runtimes" type="runtimes" />
+
+	<!-- Frameworks type -->
+	<xs:complexType name="frameworks">
+		<xs:sequence>
+			<xs:element type="framework" name="framework" maxOccurs="unbounded"
+				minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="frameworks" type="frameworks" />
+
+	<!-- Services type -->
+	<xs:complexType name="services">
+		<xs:sequence>
+			<xs:element type="service" name="service" maxOccurs="unbounded"
+				minOccurs="0" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="services" type="services" />
+
+	<!-- <xs:complexType name="PaasProvider" abstract="true"> -->
+	<xs:complexType name="paasProvider">
+		<xs:sequence>
+			<xs:element name="runtimes" type="runtimes" minOccurs="0"
+				maxOccurs="1" />
+			<xs:element name="frameworks" type="frameworks" minOccurs="0"
+				maxOccurs="1" />
+			<xs:element name="services" type="services" minOccurs="0"
+				maxOccurs="1" />
+		</xs:sequence>
+
+		<!-- name attribute -->
+		<xs:attribute name="name" use="required" type="xs:string" />
+
+		<!-- score attribute -->
+		<xs:attribute name="score" use="optional" type="xs:int" />
+	</xs:complexType>
+
+	<!-- PaaS Provider -->
+	<!-- <xs:element name="PaasProvider" nillable="true" type="PaasProvider" 
+		/> -->
+	<xs:element name="paasProvider" type="paasProvider" />
+
+	<!-- PaaS Provider: Cloud Foundry -->
+	<!-- <xs:complexType name="CloudFoundry"> -->
+	<!-- <xs:complexContent> -->
+	<!-- <xs:extension base="PaasProvider"> -->
+	<!-- <xs:sequence /> -->
+	<!-- </xs:extension> -->
+	<!-- </xs:complexContent> -->
+	<!-- </xs:complexType> -->
+
+	<!-- PaaS Provider: OpenShift -->
+	<!-- <xs:complexType name="OpenShift"> -->
+	<!-- <xs:complexContent> -->
+	<!-- <xs:extension base="PaasProvider"> -->
+	<!-- <xs:sequence /> -->
+	<!-- </xs:extension> -->
+	<!-- </xs:complexContent> -->
+	<!-- </xs:complexType> -->
+
+	<xs:complexType name="PaasProviders">
+		<xs:sequence>
+			<xs:element name="paasProvider" type="paasProvider"
+				minOccurs="0" maxOccurs="unbounded" />
+		</xs:sequence>
+	</xs:complexType>
+
+	<xs:element name="PaasProviders" type="PaasProviders">
+
+	</xs:element>
+
+	<xs:element name="Manifest">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="runtimes" type="runtimes" />
+				<xs:element name="frameworks" type="frameworks" />
+				<xs:element name="services" type="services" />
+			</xs:sequence>
+			<xs:attribute name="provider" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="ManifestResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="PaasProviders" type="PaasProviders"
+					minOccurs="0" maxOccurs="1" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="DeployApp">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="paasProvider" type="paasProvider"
+					minOccurs="1" maxOccurs="1" />
+					<xs:element name="AppID" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+<!-- 	<xs:element name="DeployAppResponse"> -->
+<!-- 		<xs:complexType> -->
+<!-- 		  <xs:sequence> -->
+<!-- 		      <xs:element name="Message" type="xs:string" /> -->
+<!-- 		  </xs:sequence> -->
+<!-- 		  <xs:attribute name="Error" type="xs:boolean" /> -->
+<!-- 		</xs:complexType> -->
+<!-- 	</xs:element> -->
+
+    <xs:element name="response">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element name="status" type="xs:string" />
+                <xs:element name="appID" type="xs:string" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    
+    <!-- ACMCommit type -->
+	<xs:complexType name="ACMCommit">
+		<xs:sequence>
+			<xs:element name="AuthorName" type="xs:string" />
+			<xs:element name="AuthorEmail" type="xs:string" />
+			<xs:element name="Date" type="xs:dateTime" />
+			<xs:element name="Revision" type="xs:string" />
+			<xs:element name="Message" type="xs:string" />
+		</xs:sequence>
+	</xs:complexType>
+    
+    <xs:element name="ACMLog">
+    	<xs:complexType>
+    		<xs:sequence>
+    			<xs:element name="ACMCommit" type="ACMCommit" maxOccurs="unbounded"/>
+    		</xs:sequence>
+    	</xs:complexType>
+    </xs:element>
+    
+    <xs:element name="ApplicationCreateResponse">
+    	<xs:complexType>
+    		<xs:sequence>
+    			<xs:element name="paasProvider" type="xs:string" />
+    			<xs:element name="appID" type="xs:string" />
+    			<xs:element name="appStatus" type="xs:string" />
+    			<xs:element name="appUrl" type="xs:string" />
+   			</xs:sequence>
+    	</xs:complexType>
+    </xs:element>
+    
+    <xs:element name="ApplicationDeployResponse">
+    	<xs:complexType>
+    		<xs:sequence>
+    			<xs:element name="paasProvider" type="xs:string" />
+    			<xs:element name="appID" type="xs:string" />
+    			<xs:element name="appStatus" type="xs:string" />
+    			<xs:element name="appUrl" type="xs:string" />
+   			</xs:sequence>
+    	</xs:complexType>
+    </xs:element>
+
+	<xs:element name="ApplicationStartResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="paasProvider" type="xs:string" />
+				<xs:element name="appID" type="xs:string" />
+				<xs:element name="appStatus" type="xs:string" />
+				<xs:element name="appUrl" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="ApplicationStopResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="paasProvider" type="xs:string" />
+				<xs:element name="appID" type="xs:string" />
+				<xs:element name="appStatus" type="xs:string" />
+				<xs:element name="appUrl" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element> 
+
+	<xs:element name="ApplicationRestartResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="paasProvider" type="xs:string" />
+				<xs:element name="appID" type="xs:string" />
+				<xs:element name="appStatus" type="xs:string" />
+				<xs:element name="appUrl" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="ApplicationDeleteResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="paasProvider" type="xs:string" />
+				<xs:element name="appID" type="xs:string" />
+				<xs:element name="appStatus" type="xs:string" />
+				<xs:element name="appUrl" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="ApplicationStatusResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="paasProvider" type="xs:string" />
+				<xs:element name="appID" type="xs:string" />
+				<xs:element name="appStatus" type="xs:string" />
+				<xs:element name="appUrl" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="ApplicationScaleResponse">
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="paasProvider" type="xs:string" />
+				<xs:element name="appID" type="xs:string" />
+				<xs:element name="appStatus" type="xs:string" />
+				<xs:element name="appUrl" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+	<xs:complexType name="App">
+		<xs:sequence>
+			<xs:element name="id" type="xs:int" />
+			<xs:element name="name" type="xs:string" />
+			<xs:element name="url" type="xs:string" />
+			<xs:element name="status" type="xs:string" />
+			<xs:element name="provider_id" type="xs:int" />
+		</xs:sequence>
+	</xs:complexType>
+	
+	<xs:element name="App" type="App" />
+	
+	<xs:element name="Apps">
+		<xs:complexType>
+    		<xs:sequence>
+    			<xs:element name="App" type="App" maxOccurs="unbounded"/>
+    		</xs:sequence>
+    	</xs:complexType>
+	</xs:element>
+	
+	<xs:element name="ErrorResponse" >
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element name="Code" type="xs:string" />
+				<xs:element name="Message" type="xs:string" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+	
+</xs:schema>
+
