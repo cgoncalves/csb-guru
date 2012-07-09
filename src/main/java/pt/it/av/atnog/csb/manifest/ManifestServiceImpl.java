@@ -1,16 +1,12 @@
 package pt.it.av.atnog.csb.manifest;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.configuration.ConfigurationException;
 
-import pt.it.av.atnog.csb.entity.common.Framework;
 import pt.it.av.atnog.csb.entity.common.PaasProvider;
-import pt.it.av.atnog.csb.entity.common.Runtime;
-import pt.it.av.atnog.csb.entity.common.Service;
 import pt.it.av.atnog.csb.entity.csb.Manifest;
 import pt.it.av.atnog.csb.entity.csb.ManifestResponse;
 import pt.it.av.atnog.csb.exception.CSBException;
@@ -25,6 +21,10 @@ import pt.it.av.atnog.csb.paas.manager.PaasProviderPTIn;
 
 public class ManifestServiceImpl implements ManifestService {
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public ManifestResponse postManifest(Manifest manifest) {
 
 		ManifestResponse response = new ManifestResponse();
@@ -52,26 +52,4 @@ public class ManifestServiceImpl implements ManifestService {
 
 		return response;
 	}
-
-	@Override
-    public Manifest toJson() {
-		Runtime r1 = new Runtime("r1ID", "name", "version", "info");
-		Framework f1 = new Framework("f1ID", "name", "version", "info");
-		Service s1 = new Service("s1ID", "name", "version", "info");
-		Service s2 = new Service("s2ID", "name", "version", "info");
-		Service s3 = new Service("s3ID", "name", "version", "info");
-		
-		Manifest manifest = new Manifest();
-		
-		List<Service> ss = new ArrayList<Service>();
-		ss.add(s1);
-		ss.add(s2);
-		ss.add(s3);
-		
-		manifest.setRuntime(r1);
-		manifest.setFramework(f1);
-		manifest.setServices(ss);
-		
-	    return manifest;
-    }
 }

@@ -66,10 +66,8 @@ public class GitAcm implements ACM {
 		this(new File(getInternalGitDirPath(appId)));
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see pt.it.av.atnog.csb.repository.Repository#getLastCommit()
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public RevCommit getLastCommit() throws AmbiguousObjectException, IOException {
@@ -79,7 +77,7 @@ public class GitAcm implements ACM {
 	}
 
 	/**
-	 * @return the git
+	 * @inheritDoc
 	 */
 	@Override
 	public Git getGit() {
@@ -87,13 +85,15 @@ public class GitAcm implements ACM {
 	}
 
 	/**
-	 * @return the repo
+	 * @inheritDoc
 	 */
-	@Override
 	public Repository getRepository() {
 		return git.getRepository();
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public void init() throws IOException {
 		File directory = new File(getInternalGitDirPath(appId));
@@ -134,6 +134,9 @@ public class GitAcm implements ACM {
 		postHook.setExecutable(true);
 	}
 	
+	/**
+	 * @inheritDoc
+	 */
 	@Override
     public void init(Manifest manifest) throws FileExistsException, IOException, JAXBException {
 		File directory = new File(getInternalGitDirPath(appId));
@@ -213,11 +216,17 @@ public class GitAcm implements ACM {
 		directory.setWritable(true, true);
     }
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public String getGitDirPath() {
 		return ACM_PATH + "/" + appId;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public String getRemoteRepository() {
 		return getRemoteRepository(appId);
@@ -227,6 +236,9 @@ public class GitAcm implements ACM {
 		return ACM_REPOSITORY_PARENT_PATH + "/" + appId;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public boolean existsApp() {
 		File repoDir = new File(getGitDirPath());
@@ -237,6 +249,9 @@ public class GitAcm implements ACM {
 		return ACM_PATH + "/" + appId;
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public Manifest getManifest() throws FileNotFoundException {
 		ProcessBuilder pb = new ProcessBuilder("git", "cat-file", "blob", "master:"+MANIFEST_FILE_NAME);
@@ -262,12 +277,18 @@ public class GitAcm implements ACM {
 		throw new FileNotFoundException();
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
     public void deleteApp(String appId) throws IOException {
 		File dir = new File(getGitDirPath());
 	    FileUtils.deleteDirectory(dir);
     }
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
     public InputStream getData() throws IOException {
 		ProcessBuilder pb = new ProcessBuilder("git", "archive", "--remote", getGitDirPath(), "--format=zip", "-9", "master");
@@ -275,6 +296,9 @@ public class GitAcm implements ACM {
 	    return p.getInputStream();
     }
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
     public ACMLog getLog() {
 		try {

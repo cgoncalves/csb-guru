@@ -64,11 +64,9 @@ public class AppServiceImpl implements AppService {
 	
 	@PersistenceContext(unitName = "CSBPU")
 	private EntityManager em;
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see pt.it.av.atnog.csb.app.AppService#getApps()
+
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public Apps getApps() {
@@ -89,10 +87,8 @@ public class AppServiceImpl implements AppService {
 		return apps;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see pt.it.av.atnog.csb.app.AppService#getApp(java.lang.String)
+	/**
+	 * @inheritDoc
 	 */
 	@Override
 	public App getApp(String appId) {
@@ -106,7 +102,7 @@ public class AppServiceImpl implements AppService {
 			}
 
 			app.setRepository(GitAcm.getRemoteRepository(app.getName()));
-			
+
 			try {
 				app.setStatus(statusApp(app.getName()).getAppStatus());
 			} catch (Exception e) {
@@ -119,21 +115,24 @@ public class AppServiceImpl implements AppService {
 		}
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public ApplicationCreateResponse createApp(String appId, Manifest manifest) {
 
 		App app;
-		
-		// check if an app with 'appId' already exists		
+
+		// check if an app with 'appId' already exists
 		app = em.find(App.class, appId);
-		
+
 		if (app != null) {
 			throw new CSBException(Status.CONFLICT, "Application '" + appId + "' already exits");
 		}
 
 		try {
 			ACM acm = new GitAcm(appId);
-			
+
 			if (manifest == null) {
 				acm.init();
 			} else {
@@ -162,189 +161,208 @@ public class AppServiceImpl implements AppService {
 		}
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
-    public ApplicationDeployResponse deployApp(String appId) {
+	public ApplicationDeployResponse deployApp(String appId) {
 		App app;
 		ApplicationCreateResponse cResponse;
-		
+
 		app = em.find(App.class, appId);
 		if (app == null) {
-			throw new CSBException(Status.NOT_FOUND, "Application '"+appId+"' not found.");
+			throw new CSBException(Status.NOT_FOUND, "Application '" + appId + "' not found.");
 		}
-		
+
 		try {
 			ACM acm = new GitAcm(appId);
 			PaasProviderService pps = new PaasProviderPTIn();
-			
+
 			if (app.getProvider() == null) {
 				// app is not yet created in the PaaS Manager. create it first!
-				cResponse = pps.createApp(appId, acm.getManifest().getProvider(), acm.getManifest().getFramework().toString());
+				cResponse = pps.createApp(appId, acm.getManifest().getProvider(), acm.getManifest().getFramework()
+				        .toString());
 			}
-	        
+
 			// deploy!
-	        cResponse = pps.deployApp(appId, acm.getData());
-	        
-	        // by this time the app was successfully created and deployed
-	        Provider provider = em.find(Provider.class, cResponse.getPaasProvider());
-	        if (provider == null) {
-	        	// provider doesn't exist yet in database. insert it!
-	        	provider = new Provider();
-	        	provider.setName(cResponse.getPaasProvider());
-	        	em.persist(provider);
-	        }
-	        
-	        // set app's provider
-	        app.setProvider(provider);
-	        app.setUrl(cResponse.getAppUrl()); // FIXME in a future CSB version this will not be necessary any longer
-	        em.persist(app);
-	        
-	        ApplicationDeployResponse response = new ApplicationDeployResponse(appId);
-	        response.setAppStatus(APP_STATUS.DEPLOYED.toString());
-//	        response.setAppUrl(getAppUrl(appId)); // FIXME in a future CSB version this WILL be necessary
-	        response.setAppUrl(cResponse.getAppUrl());
-	        response.setPaasProvider(cResponse.getPaasProvider());
-	        return response;
-        } catch (ConfigurationException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while deploying the app1.");
-		} catch (FileNotFoundException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while deploying the app2.");
-        } catch (IOException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while deploying the app3.");
-        }
-    }
+			cResponse = pps.deployApp(appId, acm.getData());
 
-	@Override
-    public ApplicationStartResponse startApp(String appId) {
-		try {
-	        PaasProviderService pps = new PaasProviderPTIn();
-	        ApplicationStartResponse response = pps.startApp(appId);
-	        response.setAppStatus(APP_STATUS.STARTED.toString());
-//	        response.setAppUrl(getAppUrl(appId)); // FIXME
-	        response.setAppUrl(em.find(App.class, appId).getUrl());
-	        return response;
-        } catch (ConfigurationException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while starting the app.");
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while starting the app.");
-        }
-    }
-
-	@Override
-    public ApplicationStopResponse stopApp(String appId) {
-		try {
-	        PaasProviderService pps = new PaasProviderPTIn();
-	        ApplicationStopResponse response = pps.stopApp(appId);
-	        response.setAppStatus(APP_STATUS.STOPPED.toString());
-//	        response.setAppUrl(getAppUrl(appId)); // FIXME
-	        response.setAppUrl(em.find(App.class, appId).getUrl());
-	        return response;
-        } catch (ConfigurationException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while stopping the app.");
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while stopping the app.");
-        }
-    }
-
-	@Override
-    public ApplicationRestartResponse restartApp(String appId) {
-		try {
-	        PaasProviderService pps = new PaasProviderPTIn();
-	        ApplicationRestartResponse response = pps.restartApp(appId);
-	        response.setAppStatus(APP_STATUS.RESTARTED.toString());
-//	        response.setAppUrl(getAppUrl(appId)); // FIXME
-	        response.setAppUrl(em.find(App.class, appId).getUrl());
-	        return response;
-        } catch (ConfigurationException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while restarting the app.");
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while restarting the app.");
-        }
-    }
-
-	@Override
-    public ApplicationDeleteResponse deleteApp(String appId) {
-		try {
-			
-			App app = em.find(App.class, appId);
-			
-			if (app == null) {
-				throw new CSBException(Status.NOT_FOUND, "Application '"+appId+"' not found.");
+			// by this time the app was successfully created and deployed
+			Provider provider = em.find(Provider.class, cResponse.getPaasProvider());
+			if (provider == null) {
+				// provider doesn't exist yet in database. insert it!
+				provider = new Provider();
+				provider.setName(cResponse.getPaasProvider());
+				em.persist(provider);
 			}
-			
+
+			// set app's provider
+			app.setProvider(provider);
+			app.setUrl(cResponse.getAppUrl()); // FIXME in a future CSB version
+											   // this will not be necessary any
+											   // longer
+			em.persist(app);
+
+			ApplicationDeployResponse response = new ApplicationDeployResponse(appId);
+			response.setAppStatus(APP_STATUS.DEPLOYED.toString());
+			// response.setAppUrl(getAppUrl(appId)); // FIXME in a future CSB
+			// version this WILL be necessary
+			response.setAppUrl(cResponse.getAppUrl());
+			response.setPaasProvider(cResponse.getPaasProvider());
+			return response;
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while deploying the app1.");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while deploying the app2.");
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while deploying the app3.");
+		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public ApplicationStartResponse startApp(String appId) {
+		try {
+			PaasProviderService pps = new PaasProviderPTIn();
+			ApplicationStartResponse response = pps.startApp(appId);
+			response.setAppStatus(APP_STATUS.STARTED.toString());
+			// response.setAppUrl(getAppUrl(appId)); // FIXME
+			response.setAppUrl(em.find(App.class, appId).getUrl());
+			return response;
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while starting the app.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while starting the app.");
+		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public ApplicationStopResponse stopApp(String appId) {
+		try {
+			PaasProviderService pps = new PaasProviderPTIn();
+			ApplicationStopResponse response = pps.stopApp(appId);
+			response.setAppStatus(APP_STATUS.STOPPED.toString());
+			// response.setAppUrl(getAppUrl(appId)); // FIXME
+			response.setAppUrl(em.find(App.class, appId).getUrl());
+			return response;
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while stopping the app.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while stopping the app.");
+		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public ApplicationRestartResponse restartApp(String appId) {
+		try {
+			PaasProviderService pps = new PaasProviderPTIn();
+			ApplicationRestartResponse response = pps.restartApp(appId);
+			response.setAppStatus(APP_STATUS.RESTARTED.toString());
+			// response.setAppUrl(getAppUrl(appId)); // FIXME
+			response.setAppUrl(em.find(App.class, appId).getUrl());
+			return response;
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while restarting the app.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while restarting the app.");
+		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public ApplicationDeleteResponse deleteApp(String appId) {
+		try {
+
+			App app = em.find(App.class, appId);
+
+			if (app == null) {
+				throw new CSBException(Status.NOT_FOUND, "Application '" + appId + "' not found.");
+			}
+
 			if (app.getProvider() != null) {
 				// app is deployed in a provider
 				PaasProviderService pps = new PaasProviderPTIn();
-		        pps.deleteApp(appId);
+				pps.deleteApp(appId);
 			}
 
-	        ACM acm = new GitAcm(appId);
-	        acm.deleteApp(appId);
-	        
-//	        Query qApp  = em.createQuery("DELETE from App app WHERE name LIKE :appId");
-//	        qApp.setParameter("appId", appId);
-//	        qApp.executeUpdate();
-	        em.remove(app);
-	        
-	        ApplicationDeleteResponse response = new ApplicationDeleteResponse(appId);
-	        response.setAppStatus(APP_STATUS.DELETED.toString());
-//	        response.setAppUrl(getAppUrl(appId)); // FIXME
-	        response.setAppUrl(app.getUrl());
-	        return response;
-        } catch (ConfigurationException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting the app.");
-        } catch (IOException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting the app.");
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting the app.");
-        }
-    }
+			ACM acm = new GitAcm(appId);
+			acm.deleteApp(appId);
+			em.remove(app);
 
-	@Override
-    public ApplicationStatusResponse statusApp(String appId) throws CSBException {
-		ApplicationStatusResponse response = new ApplicationStatusResponse(appId);
-		
-		App app = em.find(App.class, appId);
-		if (!appExists(app)) {
-			throw new CSBException(Status.NOT_FOUND, "Application '"+appId+"' not found.");
+			ApplicationDeleteResponse response = new ApplicationDeleteResponse(appId);
+			response.setAppStatus(APP_STATUS.DELETED.toString());
+			// response.setAppUrl(getAppUrl(appId)); // FIXME
+			response.setAppUrl(app.getUrl());
+			return response;
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting the app.");
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting the app.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting the app.");
 		}
-		
-//		response.setAppUrl(getAppUrl(appId)); // FIXME
-		response.setAppUrl(app.getUrl());
-		
-        if (app.getProvider() == null) {
-        	response.setAppStatus(APP_STATUS.CREATED.toString());
-        	return response;
-        }
-		
-		try {
-	        PaasProviderService pps = new PaasProviderPTIn();
-	        response = pps.statusApp(appId);
-	        return response;
-        } catch (ConfigurationException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting status of the app.");
-        } catch (Exception e) {
-	        e.printStackTrace();	        
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting status of the app.");
-        }
-    }
-	
-	private String getAppUrl(String appId) {
-		return appId + ".csb.atnog.av.it.pt"; // FIXME
 	}
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public ApplicationStatusResponse statusApp(String appId) throws CSBException {
+		ApplicationStatusResponse response = new ApplicationStatusResponse(appId);
+
+		App app = em.find(App.class, appId);
+		if (!appExists(app)) {
+			throw new CSBException(Status.NOT_FOUND, "Application '" + appId + "' not found.");
+		}
+
+		// response.setAppUrl(getAppUrl(appId)); // FIXME
+		response.setAppUrl(app.getUrl());
+
+		if (app.getProvider() == null) {
+			response.setAppStatus(APP_STATUS.CREATED.toString());
+			return response;
+		}
+
+		try {
+			PaasProviderService pps = new PaasProviderPTIn();
+			response = pps.statusApp(appId);
+			return response;
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR,
+			        "Internal server error while getting status of the app.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR,
+			        "Internal server error while getting status of the app.");
+		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public ACMLog logApp(String appId) {
 		try {
@@ -357,6 +375,9 @@ public class AppServiceImpl implements AppService {
 		}
 	}
 
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public ApplicationInfoResponse infoApp(String appId) {
 		ApplicationInfoResponse response;
@@ -378,42 +399,52 @@ public class AppServiceImpl implements AppService {
 
 		return response;
 	}
-	
-	@Override
-    public ApplicationScaleResponse scaleApp(String appId, int nInstances) {
-		if (!appExists(appId)) {
-			throw new CSBException(Status.NOT_FOUND, "Application '"+appId+"' not found.");
-		}
-		
-		ApplicationScaleResponse response;
-		
-		try {
-	        PaasProviderPTIn pps = new PaasProviderPTIn();
-	        response = pps.scaleApp(appId, nInstances);
-	        response.setAppUrl(em.find(App.class, appId).getUrl());
-	        return response;
-        } catch (ConfigurationException e) {
-        	e.printStackTrace();
-			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while scalling app.");
-        }
-    }
-	
-	@Override
-    public ServiceCreateResponse createService(String appId, String serviceId, String serviceName) {
-		if (!appExists(appId)) {
-			throw new CSBException(Status.NOT_FOUND, "Application '"+appId+"' not found.");
-		}
-		
-		try {
-	        PaasProviderPTIn pps = new PaasProviderPTIn();
-	        ServiceCreateResponse response = pps.createService(appId, serviceId, serviceName);
-	        return response;
-        } catch (ConfigurationException e) {
-        	e.printStackTrace();
-			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while creating service for app.");
-        }
-    }
 
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public ApplicationScaleResponse scaleApp(String appId, int nInstances) {
+		if (!appExists(appId)) {
+			throw new CSBException(Status.NOT_FOUND, "Application '" + appId + "' not found.");
+		}
+
+		ApplicationScaleResponse response;
+
+		try {
+			PaasProviderPTIn pps = new PaasProviderPTIn();
+			response = pps.scaleApp(appId, nInstances);
+			response.setAppUrl(em.find(App.class, appId).getUrl());
+			return response;
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while scalling app.");
+		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+	public ServiceCreateResponse createService(String appId, String serviceId, String serviceName) {
+		if (!appExists(appId)) {
+			throw new CSBException(Status.NOT_FOUND, "Application '" + appId + "' not found.");
+		}
+
+		try {
+			PaasProviderPTIn pps = new PaasProviderPTIn();
+			ServiceCreateResponse response = pps.createService(appId, serviceId, serviceName);
+			return response;
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR,
+			        "Internal server error while creating service for app.");
+		}
+	}
+
+	/**
+	 * @inheritDoc
+	 */
 	@Override
 	public ServiceDeleteResponse deleteService(String appId, String serviceName) {
 		if (!appExists(appId)) {
@@ -431,10 +462,14 @@ public class AppServiceImpl implements AppService {
 		}
 	}
 
+	private String getAppUrl(String appId) {
+		return appId + ".csb.atnog.av.it.pt"; // FIXME
+	}
+
 	private boolean appExists(String appId) {
 		return appExists(em.find(App.class, appId));
 	}
-	
+
 	private boolean appExists(App app) {
 		return app != null;
 	}

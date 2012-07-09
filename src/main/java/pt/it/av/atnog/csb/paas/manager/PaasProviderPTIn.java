@@ -60,6 +60,9 @@ public class PaasProviderPTIn implements PaasProviderService {
 		loadConfig();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PaasProviders getAllPaas() {
 
@@ -82,6 +85,9 @@ public class PaasProviderPTIn implements PaasProviderService {
 		return response.getEntity();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicationCreateResponse createApp(String appId, String provider, String framework) {
 		String uri = getUriByQuery(pmAppsCreateAppUri, provider.toLowerCase(), "csb-"+appId, framework); // FIXME
@@ -93,6 +99,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicationCreateResponse deployApp(String appId, InputStream data) {
 		try {		
@@ -118,6 +127,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicationStartResponse startApp(String appId) {
 		String uri = getUriByQuery(pmAppsStartAppUri, "csb-"+appId); // FIXME
@@ -129,6 +141,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicationStopResponse stopApp(String appId) {
 		String uri = getUriByQuery(pmAppsStopAppUri, "csb-"+appId); // FIXME
@@ -140,6 +155,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicationRestartResponse restartApp(String appId) {
 		String uri = getUriByQuery(pmAppsRestartAppUri, "csb-"+appId); // FIXME
@@ -151,6 +169,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicationDeleteResponse deleteApp(String appId) {
 		String uri = getUriByQuery(pmAppsDeleteAppUri, "csb-"+appId); // FIXME
@@ -162,6 +183,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicationStatusResponse statusApp(String appId) {
 		String uri = getUriByQuery(pmInfoAppStatusUri, "csb-"+appId); // FIXME
@@ -173,6 +197,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
 	}
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
     public ApplicationScaleResponse scaleApp(String appId, int nInstances) {
 		String uri = getUriByQuery(pmAppsScaleAppUri, "csb-"+appId, Integer.toString(nInstances));
@@ -184,6 +211,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
     }
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
     public ApplicationInfoResponse infoApp(String appId) {
 		String uri = getUriByQuery(pmInfoAppUri, "csb-"+appId);
@@ -195,6 +225,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
     }
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
     public ServiceCreateResponse createService(String appId, String serviceId, String serviceName) {
 		String uri = getUriByQuery(pmCreateServiceUri, "csb-"+appId, serviceName, serviceId); // FIXME
@@ -206,6 +239,9 @@ public class PaasProviderPTIn implements PaasProviderService {
         }
     }
 	
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
     public ServiceDeleteResponse deleteService(String appId, String serviceName) {
 		String uri = getUriByQuery(pmDeleteServiceUri, "csb-"+appId, serviceName); // FIXME
