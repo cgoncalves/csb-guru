@@ -2,6 +2,7 @@ package pt.it.av.atnog.csb.manifest;
 
 import java.util.List;
 
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -19,6 +20,7 @@ import pt.it.av.atnog.csb.paas.manager.PaasProviderPTIn;
  * @author <a href="mailto:cgoncalves@av.it.pt">Carlos Gon&ccedil;alves</a>
  */
 
+@Path("/manifest")
 public class ManifestServiceImpl implements ManifestService {
 
 	/**

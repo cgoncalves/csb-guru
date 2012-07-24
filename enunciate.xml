@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<enunciate label="csb" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="http://enunciate.codehaus.org/schemas/enunciate-1.25.xsd">
+<!-- 	<namespaces> -->
+<!-- 		<namespace id="api" uri="http://api.example.com/" /> -->
+<!-- 		<namespace id="link" uri="http://api.example.com/link" /> -->
+<!-- 		<namespace id="persona" uri="http://api.example.com/persona" /> -->
+<!-- 	</namespaces> -->
+	<modules>
+		<!-- Docs -->
+<!-- 		<docs splashPackage="org.codehaus.enunciate.api" title="CSB" copyright="csb.atnog.av.it.pt" /> -->
+		<docs title="CSB" copyright="csb.atnog.av.it.pt" />
+		<jaxws disabled="true" />
+		<c disabled="true" />
+		<obj-c disabled="true" />
+		<csharp disabled="true" />
+		<jaxws-client disabled="true" />
+		<amf disabled="true" />
+	</modules>
+</enunciate>

@@ -8,6 +8,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -40,6 +41,7 @@ import pt.it.av.atnog.csb.paas.manager.PaasProviderPTIn;
  *
  */
 @Stateless
+@Path("/apps")
 public class AppServiceImpl implements AppService {
 	
 	public static enum APP_STATUS {

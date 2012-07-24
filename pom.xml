@@ -69,7 +69,19 @@
 	</repositories>
 
 	<dependencies>
+	
+		<dependency>
+	      <groupId>org.codehaus.enunciate</groupId>
+	      <artifactId>enunciate-rt</artifactId>
+	      <version>1.25</version>
+	    </dependency>
 
+		<dependency>
+			<groupId>org.codehaus.enunciate</groupId>
+			<artifactId>maven-enunciate-plugin</artifactId>
+			<version>1.25</version>
+		</dependency>
+		
 		<!-- <dependency> -->
 		<!-- <groupId>org.apache.deltacloud.client</groupId> -->
 		<!-- <artifactId>client</artifactId> -->
@@ -198,7 +210,41 @@
 		<!-- Maven will append the version to the finalName (which is the name 
 			given to the generated war, and hence the context root) -->
 		<finalName>${project.artifactId}</finalName>
+		
 		<plugins>
+			<plugin>
+				<groupId>org.codehaus.enunciate</groupId>
+				<artifactId>maven-enunciate-plugin</artifactId>
+				<version>1.25</version>
+<!-- 				<configuration> -->
+<!-- 					<configFile>enunciate.xml</configFile> -->
+<!-- 				</configuration> -->
+				<executions>
+					<execution>
+						<goals>
+							<goal>assemble</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.codehaus.cargo</groupId>
+				<artifactId>cargo-maven2-plugin</artifactId>
+				<version>1.1.2</version>
+				<configuration>
+					<configuration>
+						<deployables>
+							<deployable>
+								<properties>
+									<context>${project.artifactId}</context>
+								</properties>
+							</deployable>
+						</deployables>
+					</configuration>
+				</configuration>
+			</plugin>
+
 			<!-- Compiler plugin enforces Java 1.6 compatibility and activates annotation 
 				processors -->
 			<plugin>
@@ -209,6 +255,7 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
+			
 			<plugin>
 				<artifactId>maven-war-plugin</artifactId>
 				<version>2.2</version>
@@ -217,6 +264,7 @@
 					<failOnMissingWebXml>false</failOnMissingWebXml>
 				</configuration>
 			</plugin>
+			
 			<!-- The JBoss AS plugin deploys your war to a local JBoss AS container -->
 			<!-- To use, set the JBOSS_HOME environment variable and run: mvn package 
 				jboss-as:deploy -->
@@ -226,5 +274,37 @@
 				<version>7.1.0.Final</version>
 			</plugin>
 		</plugins>
+		
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.codehaus.enunciate</groupId>
+										<artifactId>maven-enunciate-plugin</artifactId>
+										<versionRange>[1.25,)</versionRange>
+										<goals>
+											<goal>assemble</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<execute>
+											<runOnIncremental>false</runOnIncremental>
+										</execute>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>

@@ -30,7 +30,6 @@ import pt.it.av.atnog.csb.entity.common.ServiceDeleteResponse;
  * 
  */
 
-@Path("/paas")
 public interface PaasProviderService {
 
 	@Path("/offerings")

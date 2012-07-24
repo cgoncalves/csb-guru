@@ -18,7 +18,6 @@ import pt.it.av.atnog.csb.entity.csb.ManifestResponse;
  *
  */
 
-@Path("/manifest")
 public interface ManifestService {
 
 	/**

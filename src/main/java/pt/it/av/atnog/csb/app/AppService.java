@@ -33,7 +33,6 @@ import pt.it.av.atnog.csb.entity.csb.Manifest;
  * 
  */
 
-@Path("/apps")
 public interface AppService {
 
 	/**

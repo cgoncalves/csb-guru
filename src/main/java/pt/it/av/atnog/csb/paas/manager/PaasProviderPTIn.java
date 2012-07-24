@@ -7,6 +7,7 @@ import java.text.MessageFormat;
 import java.util.Map;
 
 import javax.ejb.Stateless;
+import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
@@ -37,6 +38,7 @@ import pt.it.av.atnog.csb.paas.PaasProviderService;
  * @author <a href="mailto:cgoncalves@av.it.pt">Carlos Gon&ccedil;alves</a>
  */
 @Stateless
+@Path("/paas")
 public class PaasProviderPTIn implements PaasProviderService {
 
 	private PropertiesConfiguration propConfig;
