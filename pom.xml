@@ -71,16 +71,22 @@
 	<dependencies>
 	
 		<dependency>
-	      <groupId>org.codehaus.enunciate</groupId>
-	      <artifactId>enunciate-rt</artifactId>
-	      <version>1.25</version>
-	    </dependency>
-
-		<dependency>
-			<groupId>org.codehaus.enunciate</groupId>
-			<artifactId>maven-enunciate-plugin</artifactId>
-			<version>1.25</version>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+			<version>1.10</version>
 		</dependency>
+	
+<!-- 		<dependency> -->
+<!-- 	      <groupId>org.codehaus.enunciate</groupId> -->
+<!-- 	      <artifactId>enunciate-rt</artifactId> -->
+<!-- 	      <version>1.25</version> -->
+<!-- 	    </dependency> -->
+
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.codehaus.enunciate</groupId> -->
+<!-- 			<artifactId>maven-enunciate-plugin</artifactId> -->
+<!-- 			<version>1.25</version> -->
+<!-- 		</dependency> -->
 		
 		<!-- <dependency> -->
 		<!-- <groupId>org.apache.deltacloud.client</groupId> -->
@@ -151,7 +157,7 @@
 			<type>jar</type>
 			<version>1.0-beta-8</version>
 		</dependency>
-
+ 
 		<!-- RestEasy JAXB -->
 		<dependency>
 			<groupId>org.jboss.resteasy</groupId>
@@ -212,38 +218,38 @@
 		<finalName>${project.artifactId}</finalName>
 		
 		<plugins>
-			<plugin>
-				<groupId>org.codehaus.enunciate</groupId>
-				<artifactId>maven-enunciate-plugin</artifactId>
-				<version>1.25</version>
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.codehaus.enunciate</groupId> -->
+<!-- 				<artifactId>maven-enunciate-plugin</artifactId> -->
+<!-- 				<version>1.25</version> -->
 <!-- 				<configuration> -->
 <!-- 					<configFile>enunciate.xml</configFile> -->
 <!-- 				</configuration> -->
-				<executions>
-					<execution>
-						<goals>
-							<goal>assemble</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+<!-- 				<executions> -->
+<!-- 					<execution> -->
+<!-- 						<goals> -->
+<!-- 							<goal>assemble</goal> -->
+<!-- 						</goals> -->
+<!-- 					</execution> -->
+<!-- 				</executions> -->
+<!-- 			</plugin> -->
 			
-			<plugin>
-				<groupId>org.codehaus.cargo</groupId>
-				<artifactId>cargo-maven2-plugin</artifactId>
-				<version>1.1.2</version>
-				<configuration>
-					<configuration>
-						<deployables>
-							<deployable>
-								<properties>
-									<context>${project.artifactId}</context>
-								</properties>
-							</deployable>
-						</deployables>
-					</configuration>
-				</configuration>
-			</plugin>
+<!-- 			<plugin> -->
+<!-- 				<groupId>org.codehaus.cargo</groupId> -->
+<!-- 				<artifactId>cargo-maven2-plugin</artifactId> -->
+<!-- 				<version>1.1.2</version> -->
+<!-- 				<configuration> -->
+<!-- 					<configuration> -->
+<!-- 						<deployables> -->
+<!-- 							<deployable> -->
+<!-- 								<properties> -->
+<!-- 									<context>${project.artifactId}</context> -->
+<!-- 								</properties> -->
+<!-- 							</deployable> -->
+<!-- 						</deployables> -->
+<!-- 					</configuration> -->
+<!-- 				</configuration> -->
+<!-- 			</plugin> -->
 
 			<!-- Compiler plugin enforces Java 1.6 compatibility and activates annotation 
 				processors -->

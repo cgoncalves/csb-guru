@@ -28,7 +28,7 @@ public interface ManifestService {
 	 */
 	@Path("/")
 	@POST
-	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ManifestResponse postManifest(Manifest manifest);
 }

@@ -17,7 +17,7 @@
 	</context-param>
 	<context-param>
         <param-name>resteasy.media.type.mappings</param-name>
-        <param-value>html : text/html, json : application/json, xml : application/xml</param-value>
+        <param-value>html : text/html, json : application/json, xml : application/xml, yaml : text/x-yaml</param-value>
     </context-param>
 	<listener>
 		<listener-class>

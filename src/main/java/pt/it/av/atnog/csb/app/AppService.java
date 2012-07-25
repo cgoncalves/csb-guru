@@ -13,6 +13,7 @@ import pt.it.av.atnog.csb.entity.common.ApplicationCreateResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationDeleteResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationDeployResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationInfoResponse;
+import pt.it.av.atnog.csb.entity.common.ApplicationLogsResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationRestartResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationScaleResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationStartResponse;
@@ -42,7 +43,7 @@ public interface AppService {
 	 */
 	@Path("/")
 	@GET
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public Apps getApps();
 
 	/**
@@ -53,7 +54,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}")
 	@GET
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public App getApp(@PathParam("appId") String appId);
 
 	/**
@@ -65,7 +66,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}")
 	@POST
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ApplicationCreateResponse createApp(@PathParam("appId") String appId, Manifest manifest);
 
 	/**
@@ -75,7 +76,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}/deploy")
 	@PUT
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ApplicationDeployResponse deployApp(@PathParam("appId") String appId);
 
 	/**
@@ -86,7 +87,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}/start")
 	@PUT
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ApplicationStartResponse startApp(@PathParam("appId") String appId);
 
 	/**
@@ -97,7 +98,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}/stop")
 	@PUT
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ApplicationStopResponse stopApp(@PathParam("appId") String appId);
 
 	/**
@@ -108,7 +109,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}/restart")
 	@PUT
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ApplicationRestartResponse restartApp(@PathParam("appId") String appId);
 
 	/**
@@ -119,7 +120,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}")
 	@DELETE
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ApplicationDeleteResponse deleteApp(@PathParam("appId") String appId);
 	
 	/**
@@ -130,7 +131,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}/status")
 	@GET
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ApplicationStatusResponse statusApp(@PathParam("appId") String appId);
 
 	/**
@@ -139,10 +140,10 @@ public interface AppService {
 	 * @param appId the {@link App} ID
 	 * @return
 	 */
-	@Path("/{appId}/log")
+	@Path("/{appId}/commitlog")
 	@GET
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public ACMLog logApp(@PathParam("appId") String appId);
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
+	public ACMLog commitLogApp(@PathParam("appId") String appId);
 
 	/**
 	 * Get info about an {@link App}
@@ -152,7 +153,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}/info")
 	@GET
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ApplicationInfoResponse infoApp(@PathParam("appId") String appId);
 
 	/**
@@ -164,7 +165,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}/scale/{nInstances}")
 	@PUT
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ApplicationScaleResponse scaleApp(@PathParam("appId") String appId, @PathParam("nInstances") int nInstances);
 
 	/**
@@ -177,7 +178,7 @@ public interface AppService {
 	 */
 	@Path("/{appId}/services/{serviceId}/{csbServiceName}")
 	@POST
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ServiceCreateResponse createService(@PathParam("appId") String appId,
 	        @PathParam("serviceId") String serviceId, @PathParam("csbServiceName") String serviceName);
 
@@ -189,7 +190,18 @@ public interface AppService {
 	 */
 	@Path("{appId}/services/{csbServiceName}")
 	@DELETE
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
 	public ServiceDeleteResponse deleteService(@PathParam("appId") String appId,
 	        @PathParam("csbServiceName") String serviceName);
+	
+	/**
+	 * Get {@link App} logs 
+	 * 
+	 * @param appId the {@link App} ID
+	 * @return
+	 */
+	@Path("/{appId}/log")
+	@GET
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON, "text/x-yaml" })
+	public ApplicationLogsResponse logsApp(@PathParam("appId") String appId);
 }

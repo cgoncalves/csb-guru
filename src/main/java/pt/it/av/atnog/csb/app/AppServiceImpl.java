@@ -20,6 +20,7 @@ import pt.it.av.atnog.csb.entity.common.ApplicationCreateResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationDeleteResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationDeployResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationInfoResponse;
+import pt.it.av.atnog.csb.entity.common.ApplicationLogsResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationRestartResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationScaleResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationStartResponse;
@@ -366,7 +367,7 @@ public class AppServiceImpl implements AppService {
 	 * @inheritDoc
 	 */
 	@Override
-	public ACMLog logApp(String appId) {
+	public ACMLog commitLogApp(String appId) {
 		try {
 			ACM acm = new GitAcm(appId);
 			return acm.getLog();
@@ -463,6 +464,30 @@ public class AppServiceImpl implements AppService {
 			        "Internal server error while deleting service for app.");
 		}
 	}
+	
+	/**
+	 * @inheritDoc
+	 */
+	@Override
+    public ApplicationLogsResponse logsApp(String appId) {
+		if (!appExists(appId)) {
+			throw new CSBException(Status.NOT_FOUND, "Application '" + appId + "' not found.");
+		}
+		
+		try {
+			PaasProviderService pps = new PaasProviderPTIn();
+			ApplicationLogsResponse response = pps.logsApp(appId);
+			// response.setAppUrl(getAppUrl(appId)); // FIXME
+			response.setAppUrl(em.find(App.class, appId).getUrl());
+			return response;
+		} catch (ConfigurationException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while getting app logs.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal Server Error while getting app logs.");
+		}
+    }
 
 	private String getAppUrl(String appId) {
 		return appId + ".csb.atnog.av.it.pt"; // FIXME

@@ -21,6 +21,7 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import pt.it.av.atnog.csb.entity.common.ApplicationCreateResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationDeleteResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationInfoResponse;
+import pt.it.av.atnog.csb.entity.common.ApplicationLogsResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationRestartResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationScaleResponse;
 import pt.it.av.atnog.csb.entity.common.ApplicationStartResponse;
@@ -55,6 +56,7 @@ public class PaasProviderPTIn implements PaasProviderService {
 	private String pmAppsScaleAppUri;
 	private String pmInfoAppUri;
 	private String pmInfoAppStatusUri;
+	private String pmInfoAppLogsUri;
 	private String pmCreateServiceUri;
 	private String pmDeleteServiceUri;
 
@@ -254,6 +256,21 @@ public class PaasProviderPTIn implements PaasProviderService {
 	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting service.");
         }
     }
+	
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+    public ApplicationLogsResponse logsApp(String appId) {
+		String uri = getUriByQuery(pmInfoAppLogsUri, "csb-"+appId);
+		System.err.println("-----------------------------------------"+uri+"+++++++++++++++++++++++++++++++");
+		try {
+	        return getUri(ApplicationLogsResponse.class, uri);
+        } catch (Exception e) {
+	        e.printStackTrace();
+	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting app logs.");
+        }
+    }
 
 	private static String getUriByQuery(String uri, String... args) {
 	    return MessageFormat.format(uri, (Object[]) args);
@@ -313,6 +330,7 @@ public class PaasProviderPTIn implements PaasProviderService {
 		pmAppsScaleAppUri = pmServerUri + propConfig.getString("pm_apps_scaleapp_uri");
 		pmInfoAppStatusUri = pmServerUri + propConfig.getString("pm_info_getappstatus_uri");
 		pmInfoAppUri = pmServerUri + propConfig.getString("pm_info_getappinfo_uri");
+		pmInfoAppLogsUri = pmServerUri + propConfig.getString("pm_info_getapplogs_uri");
 		pmInfoGetPaasUri = pmServerUri + propConfig.getString("pm_info_getpaas_uri");
 		
 		pmCreateServiceUri = pmServerUri + propConfig.getString("pm_service_create_uri");

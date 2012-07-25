@@ -1,5 +1,7 @@
 package pt.it.av.atnog.csb.entity.common;
 
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -9,7 +11,7 @@ import javax.xml.bind.annotation.XmlType;
  * @author <a href="mailto:cgoncalves@av.it.pt">Carlos Gon&ccedil;alves</a>
  * 
  */
-//@XmlAccessorType(XmlAccessType.FIELD)
+@XmlAccessorType(XmlAccessType.NONE)
 @XmlType(name = "service", propOrder = { "id", "name", "version", "info" })
 @XmlRootElement(name = "service")
 public class Service {
