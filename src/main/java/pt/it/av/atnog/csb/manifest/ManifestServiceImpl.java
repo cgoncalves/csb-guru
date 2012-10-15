@@ -1,57 +1,41 @@
 package pt.it.av.atnog.csb.manifest;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import javax.ejb.Stateless;
 import javax.ws.rs.Path;
-import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.configuration.ConfigurationException;
-
-import pt.it.av.atnog.csb.entity.common.PaasProvider;
 import pt.it.av.atnog.csb.entity.csb.Manifest;
-import pt.it.av.atnog.csb.entity.csb.ManifestResponse;
-import pt.it.av.atnog.csb.exception.CSBException;
+import pt.it.av.atnog.csb.entity.csb.PaasProvider;
 import pt.it.av.atnog.csb.paas.PaasProviderService;
 import pt.it.av.atnog.csb.paas.manager.PaasProviderPTIn;
 
 /**
- * REST Web Service
- * 
  * @author <a href="mailto:cgoncalves@av.it.pt">Carlos Gon&ccedil;alves</a>
  */
-
+@Stateless
 @Path("/manifest")
 public class ManifestServiceImpl implements ManifestService {
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public ManifestResponse postManifest(Manifest manifest) {
+	public List<PaasProvider> postManifest(Manifest manifest) throws Exception {
+		RuleEngineRunner re = RuleEngineRunner.getInstance();
+		re.setRules(manifest.getRules());
+		re.setInitialProvidersIn(new PaasProviderPTIn().getAllPaas());
 
-		ManifestResponse response = new ManifestResponse();
-
-		PaasProviderService paasService;
-		List<PaasProvider> providers;
-
-		try {
-			paasService = new PaasProviderPTIn();
-			providers = paasService.getAllPaas().getPaasProviders();
-
-			// score PaaS providers
-			ScoreTable scoreTable = new ScoreTable(providers);
-			List<PaasProvider> providersScored = scoreTable.scoreInPercentage(manifest);
-
-			response.setPaasProviders(providersScored);
-
-		} catch (ConfigurationException e) {
-			e.printStackTrace();
-			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "#TODO"); // TODO
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "#TODO"); // TODO
+		List<String> out = re.run();
+		List<PaasProvider> providers = new ArrayList<PaasProvider>();
+		PaasProviderService pps = new PaasProviderPTIn();
+		List<PaasProvider> pp = pps.getAllPaas();
+		for (String name : out) {
+			for (PaasProvider p : pp) {
+				if (p.getId().equals(name.toUpperCase())) {
+					providers.add(p);
+				}
+			}
 		}
 
-		return response;
+		return providers;
 	}
 }

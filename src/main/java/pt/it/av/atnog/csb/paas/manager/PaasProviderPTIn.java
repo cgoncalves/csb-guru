@@ -4,6 +4,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Stateless;
@@ -18,19 +20,32 @@ import org.jboss.resteasy.client.ClientRequestFactory;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 
-import pt.it.av.atnog.csb.entity.common.ApplicationCreateResponse;
-import pt.it.av.atnog.csb.entity.common.ApplicationDeleteResponse;
-import pt.it.av.atnog.csb.entity.common.ApplicationInfoResponse;
-import pt.it.av.atnog.csb.entity.common.ApplicationLogsResponse;
-import pt.it.av.atnog.csb.entity.common.ApplicationRestartResponse;
-import pt.it.av.atnog.csb.entity.common.ApplicationScaleResponse;
-import pt.it.av.atnog.csb.entity.common.ApplicationStartResponse;
-import pt.it.av.atnog.csb.entity.common.ApplicationStatusResponse;
-import pt.it.av.atnog.csb.entity.common.ApplicationStopResponse;
-import pt.it.av.atnog.csb.entity.common.PaasProviders;
-import pt.it.av.atnog.csb.entity.common.ServiceCreateResponse;
-import pt.it.av.atnog.csb.entity.common.ServiceDeleteResponse;
-import pt.it.av.atnog.csb.exception.CSBException;
+import pt.it.av.atnog.csb.entity.common.CSBException;
+import pt.it.av.atnog.csb.entity.csb.Framework;
+import pt.it.av.atnog.csb.entity.csb.Metric;
+import pt.it.av.atnog.csb.entity.csb.PaasProvider;
+import pt.it.av.atnog.csb.entity.csb.Runtime;
+import pt.it.av.atnog.csb.entity.csb.ServiceVendor;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationCreateResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationDeleteResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationInfoResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationLogsResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationRestartResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationScaleResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStartResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStatisticsResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStatusResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStopResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMFramework;
+import pt.it.av.atnog.csb.entity.paasmanager.PMMetric;
+import pt.it.av.atnog.csb.entity.paasmanager.PMPaasProvider;
+import pt.it.av.atnog.csb.entity.paasmanager.PMPaasProviders;
+import pt.it.av.atnog.csb.entity.paasmanager.PMRuntime;
+import pt.it.av.atnog.csb.entity.paasmanager.PMService;
+import pt.it.av.atnog.csb.entity.paasmanager.PMServiceCreateResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMServiceDeleteResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMServiceInfoResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMServiceListInfoResponse;
 import pt.it.av.atnog.csb.paas.PaasProviderService;
 
 /**
@@ -54,11 +69,15 @@ public class PaasProviderPTIn implements PaasProviderService {
 	private String pmAppsRestartAppUri;
 	private String pmAppsDeleteAppUri;
 	private String pmAppsScaleAppUri;
+	private String pmAppsMigrateAppUri;
 	private String pmInfoAppUri;
 	private String pmInfoAppStatusUri;
+	private String pmInfoAppStatistics;
 	private String pmInfoAppLogsUri;
 	private String pmCreateServiceUri;
 	private String pmDeleteServiceUri;
+	private String pmInfoServiceUri;
+	private String pmListAppServicesUri;
 
 	public PaasProviderPTIn() throws ConfigurationException {
 		loadConfig();
@@ -68,231 +87,360 @@ public class PaasProviderPTIn implements PaasProviderService {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PaasProviders getAllPaas() {
+	public List<PaasProvider> getAllPaas() {
 
 		ClientRequestFactory cFactory = new ClientRequestFactory();
 		ClientRequest request = cFactory.createRequest(pmInfoGetPaasUri);
 		request.accept(MediaType.APPLICATION_XML);
-		ClientResponse<PaasProviders> response;
-		
-        try {
-	        response = request.get(PaasProviders.class);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting the list of PaaS providers");
-        }
+		ClientResponse<PMPaasProviders> response;
+
+		try {
+			response = request.get(PMPaasProviders.class);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR,
+			        "Internal server error while getting the list of PaaS providers");
+		}
 
 		if (response.getStatus() != 200) {
-			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting the list of PaaS providers");
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR,
+			        "Internal server error while getting the list of PaaS providers");
 		}
-		
-		return response.getEntity();
+
+		// convert PMPaasProviders to list of PaasProvider
+		List<PMPaasProvider> pmpps = response.getEntity().getPaasProviders();
+		List<PaasProvider> pps = new ArrayList<PaasProvider>();
+		PaasProvider pNew;
+		List<Runtime> runtimes;
+		List<Framework> frameworks;
+		List<ServiceVendor> serviceVendors;
+		List<Metric> metrics;
+		Runtime r;
+		Framework f;
+		ServiceVendor sv;
+		Metric m;
+
+		for (PMPaasProvider pmp : pmpps) {
+			pNew = new PaasProvider();
+
+			// set name
+			pNew.setId(pmp.getName());
+
+			// convert list of PMRuntime to list of Runtime
+			runtimes = new ArrayList<Runtime>();
+			if (pmp.getRuntimes() != null) {
+				for (PMRuntime pmr : pmp.getRuntimes()) {
+					r = new Runtime(pmr.getId(), pmr.getName(), pmr.getVersion());
+					runtimes.add(r);
+				}
+			}
+
+			pNew.setRuntimes(runtimes);
+
+			// convert list of PMFramewwork to list of Framework
+			frameworks = new ArrayList<Framework>();
+			if (pmp.getFrameworks() != null) {
+				for (PMFramework pmf : pmp.getFrameworks()) {
+					f = new Framework(pmf.getId(), pmf.getName(), pmf.getVersion());
+					frameworks.add(f);
+				}
+			}
+
+			pNew.setFrameworks(frameworks);
+
+			// convert list of PMService to list of Service
+			serviceVendors = new ArrayList<ServiceVendor>();
+
+			if (pmp.getServices() != null) {
+				for (PMService pms : pmp.getServices()) {
+					sv = new ServiceVendor(pms.getId(), pms.getName(), pms.getVersion());
+					serviceVendors.add(sv);
+				}
+			}
+
+			pNew.setServiceVendors(serviceVendors);
+
+			// convert list of PMMetric to list of Metric
+			metrics = new ArrayList<Metric>();
+			if (pmp.getMetrics() != null) {
+				for (PMMetric pmm : pmp.getMetrics()) {
+					m = new Metric();
+					m.setName(pmm.getName());
+					metrics.add(m);
+				}
+			}
+
+			pNew.setMetrics(metrics);
+			pps.add(pNew);
+		}
+
+		return pps;
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicationCreateResponse createApp(String appId, String provider, String framework) {
-		String uri = getUriByQuery(pmAppsCreateAppUri, provider.toLowerCase(), "csb-"+appId, framework); // FIXME
+	public PMApplicationCreateResponse createApp(String appId, String provider, String framework) {
+		String uri = getUriByQuery(pmAppsCreateAppUri, provider.toLowerCase(), appId, framework);
 		try {
-	        return postUri(ApplicationCreateResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while creating the app.");
-        }
+			return postUri(PMApplicationCreateResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while creating the app.");
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicationCreateResponse deployApp(String appId, InputStream data) {
-		try {		
+	public PMApplicationCreateResponse deployApp(String appId, InputStream data) {
+		try {
 			// Delegate the deployment process to the PaaS Manager
 			ClientRequestFactory cFactory = new ClientRequestFactory();
 			ClientRequest cRequest = cFactory.createRequest(pmAppsDeployAppUri);
-	
+
 			MultipartFormDataOutput form = new MultipartFormDataOutput();
-			form.addFormData("appID", "csb-"+appId, MediaType.TEXT_PLAIN_TYPE); // FIXME
+			form.addFormData("appID", appId, MediaType.TEXT_PLAIN_TYPE);
 			form.addFormData("appData", data, MediaType.APPLICATION_OCTET_STREAM_TYPE);
 			cRequest.body(MediaType.MULTIPART_FORM_DATA_TYPE, form);
-			
-			return cRequest.post(ApplicationCreateResponse.class).getEntity();
-        } catch (FileNotFoundException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deploying the app.");
-        } catch (IOException e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deploying the app.");
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deploying the app.");
-        }
+			cRequest.header("api-key", "csb"); // FIXME
+
+			return cRequest.post(PMApplicationCreateResponse.class).getEntity();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deploying the app.");
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deploying the app.");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deploying the app.");
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicationStartResponse startApp(String appId) {
-		String uri = getUriByQuery(pmAppsStartAppUri, "csb-"+appId); // FIXME
+	public PMApplicationStartResponse startApp(String appId) {
+		String uri = getUriByQuery(pmAppsStartAppUri, appId);
 		try {
-	        return postUri(ApplicationStartResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while starting the app.");
-        }
+			return postUri(PMApplicationStartResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while starting the app.");
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicationStopResponse stopApp(String appId) {
-		String uri = getUriByQuery(pmAppsStopAppUri, "csb-"+appId); // FIXME
+	public PMApplicationStopResponse stopApp(String appId) {
+		String uri = getUriByQuery(pmAppsStopAppUri, appId);
 		try {
-	        return postUri(ApplicationStopResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while stopping the app.");
-        }
+			return postUri(PMApplicationStopResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while stopping the app.");
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicationRestartResponse restartApp(String appId) {
-		String uri = getUriByQuery(pmAppsRestartAppUri, "csb-"+appId); // FIXME
+	public PMApplicationRestartResponse restartApp(String appId) {
+		String uri = getUriByQuery(pmAppsRestartAppUri, appId);
 		try {
-	        return postUri(ApplicationRestartResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while restarting the app.");
-        }
+			return postUri(PMApplicationRestartResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while restarting the app.");
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicationDeleteResponse deleteApp(String appId) {
-		String uri = getUriByQuery(pmAppsDeleteAppUri, "csb-"+appId); // FIXME
+	public PMApplicationDeleteResponse deleteApp(String appId) {
+		String uri = getUriByQuery(pmAppsDeleteAppUri, appId);
 		try {
-	        return deleteUri(ApplicationDeleteResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting the app.");
-        }
+			return deleteUri(PMApplicationDeleteResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting the app.");
+		}
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicationStatusResponse statusApp(String appId) {
-		String uri = getUriByQuery(pmInfoAppStatusUri, "csb-"+appId); // FIXME
+	public PMApplicationStatusResponse statusApp(String appId) {
+		String uri = getUriByQuery(pmInfoAppStatusUri, appId);
 		try {
-	        return getUri(ApplicationStatusResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting status of the app.");
-        }
+			return getUri(PMApplicationStatusResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR,
+			        "Internal server error while getting status of the app.");
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public PMApplicationScaleResponse scaleApp(String appId, int nInstances) {
+		String uri = getUriByQuery(pmAppsScaleAppUri, appId, Integer.toString(nInstances));
+		try {
+			return postUri(PMApplicationScaleResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while scaling the app.");
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public PMApplicationInfoResponse infoApp(String appId) {
+		String uri = getUriByQuery(pmInfoAppUri, appId);
+		try {
+			return getUri(PMApplicationInfoResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting app information.");
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public PMApplicationLogsResponse logsApp(String appId) {
+		String uri = getUriByQuery(pmInfoAppLogsUri, appId);
+		try {
+			return getUri(PMApplicationLogsResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting app logs.");
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public PMServiceListInfoResponse getServices(String appId) {
+		String uri = getUriByQuery(pmListAppServicesUri, appId);
+		try {
+			return getUri(PMServiceListInfoResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting service.");
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public PMServiceInfoResponse getService(String appId, String serviceId) {
+		String uri = getUriByQuery(pmInfoServiceUri, appId, serviceId);
+		try {
+			return getUri(PMServiceInfoResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting service.");
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public PMServiceCreateResponse createService(String appId, String serviceId, String serviceVendorId) {
+		String uri = getUriByQuery(pmCreateServiceUri, appId, serviceId, serviceVendorId);
+		try {
+			return postUri(PMServiceCreateResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while creating service.");
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public PMServiceDeleteResponse deleteService(String appId, String serviceId) {
+		String uri = getUriByQuery(pmDeleteServiceUri, appId, serviceId);
+		try {
+			return deleteUri(PMServiceDeleteResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting service.");
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public PMApplicationStatisticsResponse statisticsApp(String appId, int samples) {
+		String uri = getUriByQuery(pmInfoAppStatistics, appId, Integer.toString(samples));
+		try {
+			return getUri(PMApplicationStatisticsResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting app statistics.");
+		}
 	}
 	
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-    public ApplicationScaleResponse scaleApp(String appId, int nInstances) {
-		String uri = getUriByQuery(pmAppsScaleAppUri, "csb-"+appId, Integer.toString(nInstances));
+    public PMApplicationCreateResponse migrateApp(String appId, String providerId) {
+		String uri = getUriByQuery(pmAppsMigrateAppUri, providerId.toLowerCase(), appId);
 		try {
-	        return postUri(ApplicationScaleResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while scaling the app.");
-        }
-    }
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-    public ApplicationInfoResponse infoApp(String appId) {
-		String uri = getUriByQuery(pmInfoAppUri, "csb-"+appId);
-		try {
-	        return getUri(ApplicationInfoResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting app information.");
-        }
-    }
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-    public ServiceCreateResponse createService(String appId, String serviceId, String serviceName) {
-		String uri = getUriByQuery(pmCreateServiceUri, "csb-"+appId, serviceName, serviceId); // FIXME
-		try {
-	        return postUri(ServiceCreateResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while creating service.");
-        }
-    }
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-    public ServiceDeleteResponse deleteService(String appId, String serviceName) {
-		String uri = getUriByQuery(pmDeleteServiceUri, "csb-"+appId, serviceName); // FIXME
-		try {
-	        return deleteUri(ServiceDeleteResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deleting service.");
-        }
-    }
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-    public ApplicationLogsResponse logsApp(String appId) {
-		String uri = getUriByQuery(pmInfoAppLogsUri, "csb-"+appId);
-		System.err.println("-----------------------------------------"+uri+"+++++++++++++++++++++++++++++++");
-		try {
-	        return getUri(ApplicationLogsResponse.class, uri);
-        } catch (Exception e) {
-	        e.printStackTrace();
-	        throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting app logs.");
-        }
+			return postUri(PMApplicationCreateResponse.class, uri);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while migrating the app.");
+		}
     }
 
 	private static String getUriByQuery(String uri, String... args) {
-	    return MessageFormat.format(uri, (Object[]) args);
-    }
-	
+		return MessageFormat.format(uri, (Object[]) args);
+	}
+
 	private static <T> T getUri(Class<T> returnType, String uri) throws Exception {
 		ClientRequestFactory cFactory = new ClientRequestFactory();
 		ClientRequest cRequest = cFactory.createRequest(uri);
+		cRequest.header("api-key", "csb");
 		ClientResponse<T> cResponse = cRequest.get(returnType);
 		return cResponse.getEntity();
 	}
-	
+
 	private static <T> T postUri(Class<T> returnType, String uri) throws Exception {
 		ClientRequestFactory cFactory = new ClientRequestFactory();
 		ClientRequest cRequest = cFactory.createRequest(uri);
+		cRequest.header("api-key", "csb");
 		ClientResponse<T> cResponse = cRequest.post(returnType);
 		return cResponse.getEntity();
 	}
-	
+
 	private static <T> T deleteUri(Class<T> returnType, String uri) throws Exception {
 		ClientRequestFactory cFactory = new ClientRequestFactory();
 		ClientRequest cRequest = cFactory.createRequest(uri);
+		cRequest.header("api-key", "csb");
 		ClientResponse<T> cResponse = cRequest.delete(returnType);
 		return cResponse.getEntity();
 	}
@@ -310,13 +458,14 @@ public class PaasProviderPTIn implements PaasProviderService {
 		return cResponse.getEntity();
 	}
 
-//	private String getAppUrl(String appId) {
-//		return appId + ".csb.atnog.av.it.pt"; // FIXME
-//	}
+	// private String getAppUrl(String appId) {
+	// return appId + ".csb.atnog.av.it.pt"; // FIXME
+	// }
 
 	private void loadConfig() throws ConfigurationException {
 		propConfig = new PropertiesConfiguration();
-		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream(PAAS_MANAGER_PTIN_PROPERTIES_FILE_NAME);
+		InputStream inputStream = this.getClass().getClassLoader()
+		        .getResourceAsStream(PAAS_MANAGER_PTIN_PROPERTIES_FILE_NAME);
 		propConfig.load(inputStream);
 
 		pmServerUri = propConfig.getString("pm_server_uri");
@@ -328,12 +477,17 @@ public class PaasProviderPTIn implements PaasProviderService {
 		pmAppsRestartAppUri = pmServerUri + propConfig.getString("pm_apps_restartapp_uri");
 		pmAppsDeleteAppUri = pmServerUri + propConfig.getString("pm_apps_deleteapp_uri");
 		pmAppsScaleAppUri = pmServerUri + propConfig.getString("pm_apps_scaleapp_uri");
+		pmAppsMigrateAppUri = pmServerUri + propConfig.getString("pm_apps_migrateapp_uri");
 		pmInfoAppStatusUri = pmServerUri + propConfig.getString("pm_info_getappstatus_uri");
 		pmInfoAppUri = pmServerUri + propConfig.getString("pm_info_getappinfo_uri");
+		pmInfoAppStatistics = pmServerUri + propConfig.getString("pm_info_app_statistics_uri");
 		pmInfoAppLogsUri = pmServerUri + propConfig.getString("pm_info_getapplogs_uri");
 		pmInfoGetPaasUri = pmServerUri + propConfig.getString("pm_info_getpaas_uri");
-		
+
 		pmCreateServiceUri = pmServerUri + propConfig.getString("pm_service_create_uri");
 		pmDeleteServiceUri = pmServerUri + propConfig.getString("pm_service_delete_uri");
+		pmInfoServiceUri = pmServerUri + propConfig.getString("pm_service_info_uri");
+		pmListAppServicesUri = pmServerUri + propConfig.getString("pm_services_info_app_uri");
 	}
+
 }

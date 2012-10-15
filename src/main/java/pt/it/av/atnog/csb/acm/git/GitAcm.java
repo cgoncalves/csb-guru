@@ -35,10 +35,10 @@ import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.storage.file.FileRepository;
 
 import pt.it.av.atnog.csb.acm.ACM;
+import pt.it.av.atnog.csb.entity.common.CSBException;
 import pt.it.av.atnog.csb.entity.csb.ACMCommit;
 import pt.it.av.atnog.csb.entity.csb.ACMLog;
 import pt.it.av.atnog.csb.entity.csb.Manifest;
-import pt.it.av.atnog.csb.exception.CSBException;
 
 /**
  * Git Application Control Manager
@@ -48,7 +48,7 @@ import pt.it.av.atnog.csb.exception.CSBException;
  */
 public class GitAcm implements ACM {
 
-	private static final String ACM_HOOK_POST_RECEIVE_PATH = "/acm/post-receive"; // TODO load from properties file
+	private static final String ACM_HOOK_PRE_RECEIVE_PATH = "/acm/post-receive"; // TODO load from properties file
 	private static final String ACM_PATH = "/acm"; // TODO load from properties file
 	private static final String MANIFEST_FILE_NAME = "MANIFEST.MF"; // TODO load from properties file
 	public static final String ACM_REPOSITORY_PARENT_PATH = "ssh://cgoncalves@fog.av.it.pt" + ACM_PATH; // FIXME load from properties file
@@ -102,11 +102,11 @@ public class GitAcm implements ACM {
 			throw new FileExistsException("Repository '" + appId + "' already exists");
 		}
 
-		// check first if post-receive hook file to copy exists and is readable
-		File originalPostHook = new File(ACM_HOOK_POST_RECEIVE_PATH);
+		// check first if pre-receive hook file to copy exists and is readable
+		File originalPreHook = new File(ACM_HOOK_PRE_RECEIVE_PATH);
 
-		if (!originalPostHook.exists() || !originalPostHook.isFile() || !originalPostHook.canRead()) {
-			throw new IOException("Couldn't open hook " + ACM_HOOK_POST_RECEIVE_PATH);
+		if (!originalPreHook.exists() || !originalPreHook.isFile() || !originalPreHook.canRead()) {
+			throw new IOException("Couldn't open hook " + ACM_HOOK_PRE_RECEIVE_PATH);
 		}
 
 		// create the new Git repository directory
@@ -120,9 +120,9 @@ public class GitAcm implements ACM {
 		initCommand.setDirectory(directory);
 		initCommand.call();
 
-		// copy post-receive hook file and set execute permission to the file
+		// copy pre-receive hook file and set execute permission to the file
 		// owner
-		File postHook = new File(directory, "hooks/post-receive");
+		File preReceiveHook = new File(directory, "hooks/post-receive");
 
 		/*
 		 * TODO instead of copying the hook file, it'd be better if we could
@@ -130,8 +130,8 @@ public class GitAcm implements ACM {
 		 * cross-operating system compatible, Java does not offer a method to
 		 * create a symbolic link because that concept only exists on Unix OS.
 		 */
-		FileUtils.copyFile(originalPostHook, postHook);
-		postHook.setExecutable(true);
+		FileUtils.copyFile(originalPreHook, preReceiveHook);
+		preReceiveHook.setExecutable(true);
 	}
 	
 	/**
@@ -146,11 +146,11 @@ public class GitAcm implements ACM {
 			throw new FileExistsException("Repository '" + appId + "' already exists");
 		}
 
-		// check first if post-receive hook file to copy exists and is readable
-		File originalPostHook = new File(ACM_HOOK_POST_RECEIVE_PATH);
+		// check first if pre-receive hook file to copy exists and is readable
+		File originalPreHook = new File(ACM_HOOK_PRE_RECEIVE_PATH);
 
-		if (!originalPostHook.exists() || !originalPostHook.isFile() || !originalPostHook.canRead()) {
-			throw new IOException("Couldn't open hook " + ACM_HOOK_POST_RECEIVE_PATH);
+		if (!originalPreHook.exists() || !originalPreHook.isFile() || !originalPreHook.canRead()) {
+			throw new IOException("Couldn't open hook " + ACM_HOOK_PRE_RECEIVE_PATH);
 		}
 
 		// create the new Git repository directory
@@ -200,8 +200,8 @@ public class GitAcm implements ACM {
 		cloneCommand.setNoCheckout(false);
 		cloneCommand.call();
 		
-		// copy post-receive hook file and set execute permission to the file owner
-		File postHook = new File(directory, "hooks/post-receive");
+		// copy pre-receive hook file and set execute permission to the file owner
+		File preHook = new File(directory, "hooks/post-receive");
 
 		/*
 		 * TODO instead of copying the hook file, it'd be better if we could
@@ -209,8 +209,8 @@ public class GitAcm implements ACM {
 		 * cross-operating system compatible, Java does not offer a method to
 		 * create a symbolic link because that concept only exists on Unix OS.
 		 */
-		FileUtils.copyFile(originalPostHook, postHook);
-		postHook.setExecutable(true, false);
+		FileUtils.copyFile(originalPreHook, preHook);
+		preHook.setExecutable(true, false);
 		
 		FileUtils.deleteDirectory(directoryWorkingTree);
 		directory.setWritable(true, true);
