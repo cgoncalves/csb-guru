@@ -48,4 +48,8 @@ public class PMPaasProviders {
         return this.paasProviders;
     }
 
+	public void setPaasProviders(List<PMPaasProvider> paasProviders) {
+		this.paasProviders = paasProviders;
+	}
+
 }

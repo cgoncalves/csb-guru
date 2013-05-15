@@ -1,4 +1,3 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
@@ -63,16 +62,171 @@
 		</repository>
 
 		<repository>
-			<id>jgit-repository</id>
-			<url>http://download.eclipse.org/jgit/maven</url>
+			<id>maven.scm-manager.org</id>
+			<name>scm-manager release repository</name>
+			<url>http://maven.scm-manager.org/nexus/content/groups/public</url>
 		</repository>
 	</repositories>
 
 	<dependencies>
+	
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+<!-- 			<version>4.2.3</version> -->
+		</dependency>
+		
+		<dependency>
+			<groupId>org.quartz-scheduler</groupId>
+			<artifactId>quartz-jboss</artifactId>
+			<version>2.1.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>pt.it.av.atnog.csb.paasmanager</groupId>
+			<artifactId>ppm-client</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ow2.sirocco.cimi</groupId>
+			<artifactId>sirocco-cimi-java-sdk</artifactId>
+			<version>0.6.2</version>
+
+			<exclusions>
+				<exclusion>
+					<groupId>org.ow2.sirocco.cimi</groupId>
+					<artifactId>sirocco-cimi-api-server</artifactId>
+				</exclusion>
+
+				<exclusion>
+					<groupId>com.sun.jersey</groupId>
+					<artifactId>jersey-server</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jersey.contribs</groupId>
+					<artifactId>jersey-spring</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.ow2.sirocco.cloudmanager</groupId>
+					<artifactId>sirocco-cloudmanager-core-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ow2.sirocco.cimi</groupId>
+			<artifactId>sirocco-cimi-api-server-impl</artifactId>
+			<version>0.6.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.jersey</groupId>
+					<artifactId>jersey-server</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>com.sun.jersey.contribs</groupId>
+					<artifactId>jersey-spring</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.ow2.sirocco.cloudmanager</groupId>
+					<artifactId>sirocco-cloudmanager-core-api</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>pt.it.av.atnog.csb.iaasmanager</groupId>
+			<artifactId>iaasmanager-client</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven.scm</groupId>
+			<artifactId>maven-scm-api</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven.scm</groupId>
+			<artifactId>maven-scm-provider-gitexe</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven.scm</groupId>
+			<artifactId>maven-scm-provider-git-commons</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven.scm</groupId>
+			<artifactId>maven-scm-provider-svnexe</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.maven.scm</groupId>
+			<artifactId>maven-scm-provider-svn-commons</artifactId>
+			<version>1.8.1</version>
+		</dependency>
+
+		<dependency>
+			<groupId>sonia.scm.clients</groupId>
+			<artifactId>scm-client-api</artifactId>
+			<version>1.28</version>
+		</dependency>
+
+		<dependency>
+			<groupId>sonia.scm.clients</groupId>
+			<artifactId>scm-client-impl</artifactId>
+			<version>1.28</version>
+		</dependency>
+
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+<!-- 		<dependency> -->
+<!-- 			<groupId>org.slf4j</groupId> -->
+<!-- 			<artifactId>log4j-over-slf4j</artifactId> -->
+<!-- 			<version>1.7.2</version> -->
+<!-- 		</dependency> -->
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.7.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.scribe</groupId>
+			<artifactId>scribe</artifactId>
+			<version>1.3.3</version>
+		</dependency>
+
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+			<version>1.7</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-oauth</artifactId>
+			<version>2.3.2.Final</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>swiprolog</groupId>
 			<artifactId>jpl</artifactId>
-			<version>6.0.2</version>
+			<version>6.2.5</version>
 			<scope>compile</scope>
 		</dependency>
 
@@ -114,14 +268,6 @@
 		<!-- <artifactId>hibernate-annotations</artifactId> -->
 		<!-- <version>3.5.6-Final</version> -->
 		<!-- </dependency> -->
-
-
-		<!-- JGit -->
-		<dependency>
-			<groupId>org.eclipse.jgit</groupId>
-			<artifactId>org.eclipse.jgit</artifactId>
-			<version>1.3.0.201202151440-r</version>
-		</dependency>
 
 		<!-- Apache Commons libraries: IO features -->
 		<dependency>
@@ -207,8 +353,7 @@
 	</dependencyManagement>
 
 	<build>
-		<!-- Maven will append the version to the finalName (which is the name 
-			given to the generated war, and hence the context root) -->
+		<!-- Maven will append the version to the finalName (which is the name given to the generated war, and hence the context root) -->
 		<finalName>${project.artifactId}</finalName>
 
 		<plugins>
@@ -245,8 +390,7 @@
 			<!-- </configuration> -->
 			<!-- </plugin> -->
 
-			<!-- Compiler plugin enforces Java 1.6 compatibility and activates annotation 
-				processors -->
+			<!-- Compiler plugin enforces Java 1.6 compatibility and activates annotation processors -->
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>2.3.1</version>
@@ -266,8 +410,7 @@
 			</plugin>
 
 			<!-- The JBoss AS plugin deploys your war to a local JBoss AS container -->
-			<!-- To use, set the JBOSS_HOME environment variable and run: mvn package 
-				jboss-as:deploy -->
+			<!-- To use, set the JBOSS_HOME environment variable and run: mvn package jboss-as:deploy -->
 			<plugin>
 				<groupId>org.jboss.as.plugins</groupId>
 				<artifactId>jboss-as-maven-plugin</artifactId>
@@ -277,8 +420,7 @@
 
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings 
-					only. It has no influence on the Maven build itself. -->
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>

@@ -3,6 +3,7 @@ package pt.it.av.atnog.csb.manifest;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -22,6 +23,17 @@ public interface ManifestService {
 	@POST
 	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	@Wrapped(element = "providers")
+	@Wrapped(element = "paas_providers")
 	public List<PaasProvider> postManifest(Manifest manifest) throws Exception;
+	
+	@Path("/get1")
+	@GET
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public Manifest getManifest();
+	
+	@Path("/get2")
+	@GET
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Wrapped(element = "paas_providers")
+	public List<PaasProvider> getManifestResults() throws Exception;
 }

@@ -2,7 +2,11 @@ package pt.it.av.atnog.csb.app;
 
 import java.util.List;
 
+import javax.annotation.security.RolesAllowed;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.DefaultValue;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -10,12 +14,13 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
 
 import org.jboss.resteasy.annotations.providers.jaxb.Wrapped;
 
-import pt.it.av.atnog.csb.entity.csb.ACMLog;
 import pt.it.av.atnog.csb.entity.csb.App;
 import pt.it.av.atnog.csb.entity.csb.Log;
 import pt.it.av.atnog.csb.entity.csb.Manifest;
@@ -31,7 +36,12 @@ import pt.it.av.atnog.csb.entity.paasmanager.PMService;
  * @author <a href="mailto:cgoncalves@av.it.pt">Carlos Gon&ccedil;alves</a>
  */
 
-public interface AppService {
+public interface AppService2 {
+	
+	@Path("/{appId}/cenas")
+	@POST
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public List<App> getAppsAsync();
 
 	/**
 	 * Get all apps.
@@ -40,9 +50,10 @@ public interface AppService {
 	 */
 	@Path("/")
 	@GET
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Wrapped(element = "apps")
-	public List<App> getApps();
+	public List<App> getApps(@Context SecurityContext ctx);
 
 	/**
 	 * Get an {@link App} given an appId
@@ -53,8 +64,9 @@ public interface AppService {
 	 */
 	@Path("/{appId}")
 	@GET
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public App getApp(@PathParam("appId") String appId);
+	public App getApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	/**
 	 * Create a new {@link App}.
@@ -66,8 +78,16 @@ public interface AppService {
 	 */
 	@Path("/{appId}")
 	@POST
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response createApp(@PathParam("appId") String appId, Manifest manifest);
+	public Response createApp(@Context SecurityContext ctx, @PathParam("appId") String appId, @FormParam("repository_type") @DefaultValue("git")  String repositoryType);
+	
+	@Path("/{appId}/manifest")
+	@POST
+	@RolesAllowed( {"user",  "admin"} )
+	@Consumes({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+	public Response createManifest(@Context SecurityContext ctx, @PathParam("appId") String appId, Manifest manifest);
 
 	/**
 	 * Trigger the deployment process of an {@link App}.
@@ -78,8 +98,9 @@ public interface AppService {
 	 */
 	@Path("/{appId}/deploy")
 	@PUT
+	@RolesAllowed("admin")
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response deployApp(@PathParam("appId") String appId);
+	public Response deployApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	/**
 	 * Start an {@link App}
@@ -90,8 +111,9 @@ public interface AppService {
 	 */
 	@Path("/{appId}/start")
 	@PUT
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response startApp(@PathParam("appId") String appId);
+	public Response startApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	/**
 	 * Stop an {@link App}
@@ -102,8 +124,9 @@ public interface AppService {
 	 */
 	@Path("/{appId}/stop")
 	@PUT
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response stopApp(@PathParam("appId") String appId);
+	public Response stopApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	/**
 	 * Restart an {@link App}
@@ -114,8 +137,9 @@ public interface AppService {
 	 */
 	@Path("/{appId}/restart")
 	@PUT
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response restartApp(@PathParam("appId") String appId);
+	public Response restartApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	/**
 	 * Delete an {@link App}
@@ -126,8 +150,9 @@ public interface AppService {
 	 */
 	@Path("/{appId}")
 	@DELETE
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response deleteApp(@PathParam("appId") String appId);
+	public Response deleteApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	/**
 	 * Get the status of an {@link App}
@@ -138,20 +163,22 @@ public interface AppService {
 	 */
 	@Path("/{appId}/status")
 	@GET
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public PMApplicationStatusResponse statusApp(@PathParam("appId") String appId);
+	public PMApplicationStatusResponse statusApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
-	/**
-	 * Get the commit log an {@link App}
-	 * 
-	 * @param appId
-	 *            the {@link App} ID
-	 * @return
-	 */
-	@Path("/{appId}/commitlog")
-	@GET
-	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public ACMLog commitLogApp(@PathParam("appId") String appId);
+//	/**
+//	 * Get the commit log an {@link App}
+//	 * 
+//	 * @param appId
+//	 *            the {@link App} ID
+//	 * @return
+//	 */
+//	@Path("/{appId}/commitlog")
+//	@GET
+//	@RolesAllowed( {"user",  "admin"} )
+//	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
+//	public ACMLog commitLogApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	/**
 	 * Get info about an {@link App}
@@ -162,8 +189,9 @@ public interface AppService {
 	 */
 	@Path("/{appId}/info")
 	@GET
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public PMApplicationInfoResponse infoApp(@PathParam("appId") String appId);
+	public PMApplicationInfoResponse infoApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	/**
 	 * Scale an {@link App} to <code>nInstances</code>
@@ -175,13 +203,15 @@ public interface AppService {
 	 */
 	@Path("/{appId}/scale/{nInstances}")
 	@PUT
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response scaleApp(@PathParam("appId") String appId, @PathParam("nInstances") int nInstances);
+	public Response scaleApp(@Context SecurityContext ctx, @PathParam("appId") String appId, @PathParam("nInstances") int nInstances);
 	
 	@Path("/{appId}/migrate/{providerId}")
 	@PUT
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public App migrateApp(@PathParam("appId") String appId, @PathParam("providerId") String providerId);
+	public App migrateApp(@Context SecurityContext ctx, @PathParam("appId") String appId, @PathParam("providerId") String providerId);
 
 	/**
 	 * Create a new service for an {@link App}.
@@ -193,11 +223,12 @@ public interface AppService {
 	 * @param csbServiceId
 	 * @return
 	 */
-	@Path("/{appId}/services/{serviceId}/{vendorId}")
+	@Path("/{appId}/services/{serviceId}")
 	@POST
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response createService(@PathParam("appId") String appId, @PathParam("serviceId") String serviceId,
-	        @PathParam("vendorId") String vendorId);
+	public Response createService(@Context SecurityContext ctx, @PathParam("appId") String appId, @PathParam("serviceId") String serviceId,
+	        @QueryParam("vendorId") String vendorId);
 
 	/**
 	 * Delete a service associated to an {@link App}
@@ -209,8 +240,9 @@ public interface AppService {
 	 */
 	@Path("{appId}/services/{csbServiceId}")
 	@DELETE
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Response deleteService(@PathParam("appId") String appId, @PathParam("csbServiceId") String csbServiceId);
+	public Response deleteService(@Context SecurityContext ctx, @PathParam("appId") String appId, @PathParam("csbServiceId") String csbServiceId);
 
 	/**
 	 * Get a service associated to an {@link App}
@@ -222,8 +254,9 @@ public interface AppService {
 	 */
 	@Path("{appId}/services/{csbServiceId}")
 	@GET
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Service getService(@PathParam("appId") String appId, @PathParam("csbServiceId") String csbServiceId);
+	public Service getService(@Context SecurityContext ctx, @PathParam("appId") String appId, @PathParam("csbServiceId") String csbServiceId);
 
 	/**
 	 * Get a list of services associated to an {@link App}
@@ -235,9 +268,10 @@ public interface AppService {
 	 */
 	@Path("{appId}/services")
 	@GET
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	@Wrapped(element = "services")
-	public List<Service> getServices(@PathParam("appId") String appId);
+	public List<Service> getServices(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	/**
 	 * Get {@link App} logs
@@ -248,11 +282,13 @@ public interface AppService {
 	 */
 	@Path("/{appId}/log")
 	@GET
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Log logApp(@PathParam("appId") String appId);
+	public Log logApp(@Context SecurityContext ctx, @PathParam("appId") String appId);
 
 	@Path("/{appId}/monitor")
 	@GET
+	@RolesAllowed( {"user",  "admin"} )
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
-	public Monitor monitorApp(@PathParam("appId") String appId, @QueryParam("samples") int samples);
+	public Monitor monitorApp(@Context SecurityContext ctx, @PathParam("appId") String appId, @QueryParam("samples") int samples);
 }

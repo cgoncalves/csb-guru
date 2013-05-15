@@ -11,6 +11,7 @@ import javax.ws.rs.core.Response.Status;
 import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientRequestFactory;
 import org.jboss.resteasy.client.ClientResponse;
+import org.jboss.resteasy.util.GenericType;
 
 import pt.it.av.atnog.csb.entity.common.CSBException;
 import pt.it.av.atnog.csb.entity.csb.Framework;
@@ -26,12 +27,12 @@ public class KnowledgeBase {
 
 	public static void main(String args[]) {
 		ClientRequestFactory cFactory = new ClientRequestFactory();
-		ClientRequest request = cFactory.createRequest("http://fog.av.it.pt:8080/rest/paas/offerings");
+		ClientRequest request = cFactory.createRequest("http://localhost:8080/csb/rest/paas/offerings");
 		request.accept(MediaType.APPLICATION_XML);
-		ClientResponse<List> response;
+		ClientResponse<List<PaasProvider>> response;
 
 		try {
-			response = request.get(List.class);
+			response = request.get(new GenericType<List<PaasProvider>>() {});
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new CSBException(Status.INTERNAL_SERVER_ERROR,

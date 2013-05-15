@@ -1,2 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<datasources/>
+<datasources xmlns="http://www.jboss.org/ironjacamar/schema">
+	<datasource jndi-name="java:jboss/datasources/MySqlDS" pool-name="MySqlDS">
+		<connection-url>jdbc:mysql://10.115.1.19:3306/csbDev</connection-url>
+		<driver>com.mysql</driver>
+		<transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
+		<security>
+			<user-name>csb</user-name>
+			<password>csb</password>
+		</security>
+	</datasource>
+</datasources>

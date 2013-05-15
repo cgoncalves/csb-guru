@@ -1,34 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<persistence
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence"
-	version="1.0">
+
+<persistence version="2.0"
+	xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd">
 	<persistence-unit name="CSBPU">
 
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 
 		<jta-data-source>java:jboss/datasources/MySqlDS</jta-data-source>
 
-		<class>pt.it.av.atnog.csb.entity.csb.Platform</class>
-		<class>pt.it.av.atnog.csb.entity.csb.Provider</class>
+		<!-- <class>pt.it.av.atnog.csb.entity.csb.Platform</class> -->
+		<!-- <class>pt.it.av.atnog.csb.entity.csb.Provider</class> -->
+		<class>pt.it.av.atnog.csb.entity.csb.PaasProvider</class>
+		<class>pt.it.av.atnog.csb.entity.ppm.PrivatePaas</class>
 		<class>pt.it.av.atnog.csb.entity.csb.App</class>
+		<class>pt.it.av.atnog.csb.entity.csb.Role</class>
+		<class>pt.it.av.atnog.csb.entity.csb.User</class>
+		<class>pt.it.av.atnog.csb.entity.csb.auth.oauth.AccessToken</class>
+		<class>pt.it.av.atnog.csb.entity.csb.auth.oauth.Consumer</class>
+		<!-- <class>pt.it.av.atnog.csb.entity.csb.auth.Permission</class> -->
+		<class>pt.it.av.atnog.csb.entity.csb.auth.oauth.RequestToken</class>
 
 		<properties>
 			<!-- SQL dialect -->
 			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQL5Dialect" />
-			<!-- Drop and re-create the database schema on startup -->
-			<!-- <property name="hibernate.hbm2ddl.auto" value="update" /> -->
-			<!-- <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver" 
-				/> -->
-			<!-- <property name="hibernate.connection.username" value="csb" /> -->
-			<!-- <property name="hibernate.connection.password" value="csb" /> -->
-			<!-- <property name="hibernate.connection.url" value="jdbc:mysql://fog.av.it.pt:3306/csb" 
-				/> -->
-<!-- 			<property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" /> -->
+			<property name="hibernate.hbm2ddl.import_files" value="/import.sql" />
 			<property name="hibernate.hbm2ddl.auto" value="update" />
-
 			<!-- Echo all executed SQL to stdout -->
-			<!-- <property name="show_sql">true</property> -->
+			<property name="show_sql" value="true" />
 		</properties>
 	</persistence-unit>
 </persistence>

@@ -26,6 +26,7 @@ import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStartResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStatisticsResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStatusResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStopResponse;
+import pt.it.av.atnog.csb.entity.paasmanager.PMProviderCreateResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMServiceCreateResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMServiceDeleteResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMServiceInfoResponse;
@@ -132,4 +133,8 @@ public interface PaasProviderService {
 	@Produces({ MediaType.APPLICATION_XML, MediaType.APPLICATION_JSON })
 	public PMServiceDeleteResponse deleteService(@PathParam("appId") String appId,
 	        @PathParam("serviceId") String serviceId);
+	
+	public PMProviderCreateResponse registerPaas(String name, String type, String apiEndpoint, String apiKey, String apiSecret) throws Exception;
+	
+	public PMProviderCreateResponse updatePaas(List<PaasProvider> providers) throws Exception;
 }

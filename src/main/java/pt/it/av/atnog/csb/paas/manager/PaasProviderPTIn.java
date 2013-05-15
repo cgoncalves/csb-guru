@@ -9,9 +9,13 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Stateless;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.Marshaller;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
@@ -23,9 +27,11 @@ import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
 import pt.it.av.atnog.csb.entity.common.CSBException;
 import pt.it.av.atnog.csb.entity.csb.Framework;
 import pt.it.av.atnog.csb.entity.csb.Metric;
+import pt.it.av.atnog.csb.entity.csb.MetricEntry;
 import pt.it.av.atnog.csb.entity.csb.PaasProvider;
 import pt.it.av.atnog.csb.entity.csb.Runtime;
 import pt.it.av.atnog.csb.entity.csb.ServiceVendor;
+import pt.it.av.atnog.csb.entity.paasmanager.PMApiLogin;
 import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationCreateResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationDeleteResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationInfoResponse;
@@ -38,6 +44,8 @@ import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStatusResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMApplicationStopResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMFramework;
 import pt.it.av.atnog.csb.entity.paasmanager.PMMetric;
+import pt.it.av.atnog.csb.entity.paasmanager.PMPaasCreate;
+import pt.it.av.atnog.csb.entity.paasmanager.PMProviderCreateResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMPaasProvider;
 import pt.it.av.atnog.csb.entity.paasmanager.PMPaasProviders;
 import pt.it.av.atnog.csb.entity.paasmanager.PMRuntime;
@@ -46,6 +54,7 @@ import pt.it.av.atnog.csb.entity.paasmanager.PMServiceCreateResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMServiceDeleteResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMServiceInfoResponse;
 import pt.it.av.atnog.csb.entity.paasmanager.PMServiceListInfoResponse;
+import pt.it.av.atnog.csb.entity.ppm.PrivatePaas;
 import pt.it.av.atnog.csb.paas.PaasProviderService;
 
 /**
@@ -58,7 +67,10 @@ import pt.it.av.atnog.csb.paas.PaasProviderService;
 public class PaasProviderPTIn implements PaasProviderService {
 
 	private PropertiesConfiguration propConfig;
-	public static final String PAAS_MANAGER_PTIN_PROPERTIES_FILE_NAME = "/pt/it/av/atnog/csb/paas/manager/pm-ptin.properties";
+	public static final String PAAS_MANAGER_PTIN_PROPERTIES_FILE_NAME = "pm-ptin.properties";
+	
+	@PersistenceContext(unitName = "CSBPU")
+	private EntityManager em;
 
 	private String pmServerUri;
 	private String pmInfoGetPaasUri;
@@ -78,9 +90,16 @@ public class PaasProviderPTIn implements PaasProviderService {
 	private String pmDeleteServiceUri;
 	private String pmInfoServiceUri;
 	private String pmListAppServicesUri;
+	private String pmRegisterPaas;
+	private String pmUpdatePaas;
 
 	public PaasProviderPTIn() throws ConfigurationException {
 		loadConfig();
+	}
+	
+	public PaasProviderPTIn(EntityManager em) throws ConfigurationException {
+		this();
+		this.em = em;
 	}
 
 	/**
@@ -109,71 +128,10 @@ public class PaasProviderPTIn implements PaasProviderService {
 
 		// convert PMPaasProviders to list of PaasProvider
 		List<PMPaasProvider> pmpps = response.getEntity().getPaasProviders();
+		List<PrivatePaas> privatePaasList = new PrivatePaasManager().offerings(em);
 		List<PaasProvider> pps = new ArrayList<PaasProvider>();
-		PaasProvider pNew;
-		List<Runtime> runtimes;
-		List<Framework> frameworks;
-		List<ServiceVendor> serviceVendors;
-		List<Metric> metrics;
-		Runtime r;
-		Framework f;
-		ServiceVendor sv;
-		Metric m;
-
-		for (PMPaasProvider pmp : pmpps) {
-			pNew = new PaasProvider();
-
-			// set name
-			pNew.setId(pmp.getName());
-
-			// convert list of PMRuntime to list of Runtime
-			runtimes = new ArrayList<Runtime>();
-			if (pmp.getRuntimes() != null) {
-				for (PMRuntime pmr : pmp.getRuntimes()) {
-					r = new Runtime(pmr.getId(), pmr.getName(), pmr.getVersion());
-					runtimes.add(r);
-				}
-			}
-
-			pNew.setRuntimes(runtimes);
-
-			// convert list of PMFramewwork to list of Framework
-			frameworks = new ArrayList<Framework>();
-			if (pmp.getFrameworks() != null) {
-				for (PMFramework pmf : pmp.getFrameworks()) {
-					f = new Framework(pmf.getId(), pmf.getName(), pmf.getVersion());
-					frameworks.add(f);
-				}
-			}
-
-			pNew.setFrameworks(frameworks);
-
-			// convert list of PMService to list of Service
-			serviceVendors = new ArrayList<ServiceVendor>();
-
-			if (pmp.getServices() != null) {
-				for (PMService pms : pmp.getServices()) {
-					sv = new ServiceVendor(pms.getId(), pms.getName(), pms.getVersion());
-					serviceVendors.add(sv);
-				}
-			}
-
-			pNew.setServiceVendors(serviceVendors);
-
-			// convert list of PMMetric to list of Metric
-			metrics = new ArrayList<Metric>();
-			if (pmp.getMetrics() != null) {
-				for (PMMetric pmm : pmp.getMetrics()) {
-					m = new Metric();
-					m.setName(pmm.getName());
-					metrics.add(m);
-				}
-			}
-
-			pNew.setMetrics(metrics);
-			pps.add(pNew);
-		}
-
+		pps.addAll(convertToPaasProviders(pmpps));
+		pps.addAll(privatePaasList);
 		return pps;
 	}
 
@@ -416,6 +374,37 @@ public class PaasProviderPTIn implements PaasProviderService {
 			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while migrating the app.");
 		}
     }
+	
+	@Override
+	public PMProviderCreateResponse registerPaas(String name, String type, String apiEndpoint, String apiKey, String apiSecret) throws Exception {
+		System.out.println("api key: " + apiKey);
+		System.out.println("api secret: " + apiSecret);
+		
+		PMApiLogin login = new PMApiLogin(apiKey, apiSecret);
+		PMPaasCreate paas = new PMPaasCreate(name, type, apiEndpoint, login);
+		
+		JAXBContext context = JAXBContext.newInstance(PMPaasCreate.class);
+		Marshaller m = context.createMarshaller();
+		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		m.marshal(paas, System.out);
+		
+		
+		context = JAXBContext.newInstance(PMApiLogin.class);
+		m = context.createMarshaller();
+		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+		m.marshal(login, System.out);
+		
+		
+		return postUri(PMProviderCreateResponse.class, pmRegisterPaas, paas);
+	}
+	
+	@Override
+	public PMProviderCreateResponse updatePaas(List<PaasProvider> providers) throws Exception {
+		List<PMPaasProvider> paases = convertToPMPaasProviders(providers);
+		PMPaasProviders ppp = new PMPaasProviders();
+		ppp.setPaasProviders(paases);
+		return putUri(PMProviderCreateResponse.class, pmUpdatePaas, ppp);
+	}
 
 	private static String getUriByQuery(String uri, String... args) {
 		return MessageFormat.format(uri, (Object[]) args);
@@ -434,6 +423,24 @@ public class PaasProviderPTIn implements PaasProviderService {
 		ClientRequest cRequest = cFactory.createRequest(uri);
 		cRequest.header("api-key", "csb");
 		ClientResponse<T> cResponse = cRequest.post(returnType);
+		return cResponse.getEntity();
+	}
+	
+	private static <T> T postUri(Class<T> returnType, String uri, Object obj) throws Exception {
+		ClientRequestFactory cFactory = new ClientRequestFactory();
+		ClientRequest cRequest = cFactory.createRequest(uri);
+		cRequest.body(MediaType.APPLICATION_XML_TYPE, obj);
+		cRequest.header("api-key", "csb");
+		ClientResponse<T> cResponse = cRequest.post(returnType);
+		return cResponse.getEntity();
+	}
+	
+	private static <T> T putUri(Class<T> returnType, String uri, Object obj) throws Exception {
+		ClientRequestFactory cFactory = new ClientRequestFactory();
+		ClientRequest cRequest = cFactory.createRequest(uri);
+		cRequest.body(MediaType.APPLICATION_XML_TYPE, obj);
+		cRequest.header("api-key", "csb");
+		ClientResponse<T> cResponse = cRequest.put(returnType);
 		return cResponse.getEntity();
 	}
 
@@ -461,6 +468,136 @@ public class PaasProviderPTIn implements PaasProviderService {
 	// private String getAppUrl(String appId) {
 	// return appId + ".csb.atnog.av.it.pt"; // FIXME
 	// }
+	
+	public static List<PMPaasProvider> convertToPMPaasProviders(List<PaasProvider> providers) {
+		List<PMPaasProvider> pmproviders = new ArrayList<PMPaasProvider>();
+		PMPaasProvider pmprovider;
+		List<PMRuntime> runtimes;
+		List<PMFramework> frameworks;
+		List<PMMetric> metrics;
+		List<PMService> services;
+		
+		for (PaasProvider p : providers) {
+			pmprovider = new PMPaasProvider();
+			runtimes = new ArrayList<PMRuntime>();
+			frameworks = new ArrayList<PMFramework>();
+			metrics = new ArrayList<PMMetric>();
+			services = new ArrayList<PMService>();
+			
+			// id
+			pmprovider.setName(p.getId());
+			
+			// runtimes
+			if (p.getRuntimes() != null) {
+				for (Runtime r : p.getRuntimes()) {
+					runtimes.add(new PMRuntime(r.getId(), r.getName(), r.getVersion(), r.getInfo()));
+				}
+			}
+			
+			// frameworks
+			if (p.getFrameworks() != null) {
+				for (Framework f : p.getFrameworks()) {
+					frameworks.add(new PMFramework(f.getId(), f.getName(), f.getVersion(), f.getInfo()));
+				}
+			}
+
+			
+			// services
+			if (p.getServiceVendors() != null) {
+				for (ServiceVendor s : p.getServiceVendors()) {
+					services.add(new PMService(s.getId(), s.getName(), s.getVersion()));
+				}
+			}
+			
+			// metrics
+			if (p.getMetrics() != null) {
+				for (Metric m : p.getMetrics()) {
+					if (m.getMetricEntries() != null) {
+						for (MetricEntry me : m.getMetricEntries()) {
+							metrics.add(new PMMetric(m.getName(), m.getInfo(), me.getValue(), m.getUnit()));
+						}
+					}
+				}
+			}
+			
+			pmprovider.setRuntimes(runtimes);
+			pmprovider.setFrameworks(frameworks);
+			pmprovider.setServices(services);
+			pmprovider.setMetrics(metrics);
+			pmproviders.add(pmprovider);
+		}
+		
+		return pmproviders;
+	}
+	
+	public static List<PaasProvider> convertToPaasProviders(List<PMPaasProvider> pmpps) {
+		List<PaasProvider> pps = new ArrayList<PaasProvider>();
+		PaasProvider pNew;
+		List<Runtime> runtimes;
+		List<Framework> frameworks;
+		List<ServiceVendor> serviceVendors;
+		List<Metric> metrics;
+		Runtime r;
+		Framework f;
+		ServiceVendor sv;
+		Metric m;
+
+		for (PMPaasProvider pmp : pmpps) {
+			pNew = new PaasProvider();
+
+			// set name
+			pNew.setId(pmp.getName());
+
+			// convert list of PMRuntime to list of Runtime
+			runtimes = new ArrayList<Runtime>();
+			if (pmp.getRuntimes() != null) {
+				for (PMRuntime pmr : pmp.getRuntimes()) {
+					r = new Runtime(pmr.getId(), pmr.getName(), pmr.getVersion());
+					runtimes.add(r);
+				}
+			}
+
+			pNew.setRuntimes(runtimes);
+
+			// convert list of PMFramewwork to list of Framework
+			frameworks = new ArrayList<Framework>();
+			if (pmp.getFrameworks() != null) {
+				for (PMFramework pmf : pmp.getFrameworks()) {
+					f = new Framework(pmf.getId(), pmf.getName(), pmf.getVersion());
+					frameworks.add(f);
+				}
+			}
+
+			pNew.setFrameworks(frameworks);
+
+			// convert list of PMService to list of Service
+			serviceVendors = new ArrayList<ServiceVendor>();
+
+			if (pmp.getServices() != null) {
+				for (PMService pms : pmp.getServices()) {
+					sv = new ServiceVendor(pms.getId(), pms.getName(), pms.getVersion());
+					serviceVendors.add(sv);
+				}
+			}
+
+			pNew.setServiceVendors(serviceVendors);
+
+			// convert list of PMMetric to list of Metric
+			metrics = new ArrayList<Metric>();
+			if (pmp.getMetrics() != null) {
+				for (PMMetric pmm : pmp.getMetrics()) {
+					m = new Metric();
+					m.setName(pmm.getName());
+					metrics.add(m);
+				}
+			}
+
+			pNew.setMetrics(metrics);
+			pps.add(pNew);
+		}
+		
+		return pps;
+	}
 
 	private void loadConfig() throws ConfigurationException {
 		propConfig = new PropertiesConfiguration();
@@ -488,6 +625,9 @@ public class PaasProviderPTIn implements PaasProviderService {
 		pmDeleteServiceUri = pmServerUri + propConfig.getString("pm_service_delete_uri");
 		pmInfoServiceUri = pmServerUri + propConfig.getString("pm_service_info_uri");
 		pmListAppServicesUri = pmServerUri + propConfig.getString("pm_services_info_app_uri");
+		
+		pmRegisterPaas = pmServerUri + propConfig.getString("pm_register_paas_uri");
+		pmUpdatePaas = pmServerUri + propConfig.getString("pm_update_paas_uri");
 	}
 
 }
