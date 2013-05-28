@@ -177,11 +177,15 @@ public class CsbOAuthServlet extends HttpServlet {
 			logger.debug("All OK");
 
 		} catch (OAuthException x) {
+			logger.error("ex1:" + x.getMessage());
 			OAuthUtils.makeErrorResponse(resp, x.getMessage(), x.getHttpCode(), provider);
 		} catch (OAuthProblemException x) {
+			logger.error("ex2:" + x.getMessage());
+			logger.error("ex2_1:" + x);
 			OAuthUtils.makeErrorResponse(resp, x.getProblem(), OAuthUtils.getHttpCode(x), provider);
 		} catch (Exception x) {
-			logger.error("Exception ", x);
+			logger.error("ex3:" + x.getMessage());
+			logger.error("Exception ", x.getMessage());
 			OAuthUtils.makeErrorResponse(resp, x.getMessage(), HttpURLConnection.HTTP_INTERNAL_ERROR, provider);
 		}
 	}

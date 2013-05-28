@@ -18,10 +18,10 @@ public class PrivatePaas extends PaasProvider {
 		NOT_BOOTSTRAPED, BOOTSTRAPPING, BOOTSTRAPPED
 	}
 
-	@Column(name = "state", unique = false, nullable = false)
+	@Column(name = "state", unique = false, nullable = true)
 	private State state;
 	
-	@Column(name = "domain", unique = true, nullable = false)
+	@Column(name = "domain", unique = true, nullable = true)
 	private String domain;
 
 	public PrivatePaas() {

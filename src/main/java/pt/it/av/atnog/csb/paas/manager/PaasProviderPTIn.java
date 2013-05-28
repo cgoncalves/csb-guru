@@ -23,7 +23,10 @@ import org.jboss.resteasy.client.ClientRequest;
 import org.jboss.resteasy.client.ClientRequestFactory;
 import org.jboss.resteasy.client.ClientResponse;
 import org.jboss.resteasy.plugins.providers.multipart.MultipartFormDataOutput;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import pt.it.av.atnog.csb.app.AppServiceImpl2;
 import pt.it.av.atnog.csb.entity.common.CSBException;
 import pt.it.av.atnog.csb.entity.csb.Framework;
 import pt.it.av.atnog.csb.entity.csb.Metric;
@@ -66,6 +69,8 @@ import pt.it.av.atnog.csb.paas.PaasProviderService;
 @Path("/paas")
 public class PaasProviderPTIn implements PaasProviderService {
 
+	private static final Logger logger = LoggerFactory.getLogger(PaasProviderPTIn.class);
+	
 	private PropertiesConfiguration propConfig;
 	public static final String PAAS_MANAGER_PTIN_PROPERTIES_FILE_NAME = "pm-ptin.properties";
 	
@@ -165,7 +170,10 @@ public class PaasProviderPTIn implements PaasProviderService {
 			cRequest.body(MediaType.MULTIPART_FORM_DATA_TYPE, form);
 			cRequest.header("api-key", "csb"); // FIXME
 
-			return cRequest.post(PMApplicationCreateResponse.class).getEntity();
+			logger.info("Deploying app {} (sending to the PaaS Manager)...", appId);
+			PMApplicationCreateResponse response = cRequest.post(PMApplicationCreateResponse.class).getEntity();
+			logger.info("Deployed successfully app {} (sent it to the PaaS Manager)!", appId);
+			return response;
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while deploying the app.");

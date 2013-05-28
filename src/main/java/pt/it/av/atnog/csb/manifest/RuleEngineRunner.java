@@ -21,7 +21,7 @@ public class RuleEngineRunner {
 	private List<Rule> rules;
 	private List<String> initialProvidersIn;
 	private static RuleEngineRunner INSTANCE = null;
-	private static String RULES_FILE = "/Users/cgoncalves/csb2.pro";
+	private static String RULES_FILE = "/home/ubuntu/csb2.pro";
 
 	private RuleEngineRunner() throws FileNotFoundException {
 		init();

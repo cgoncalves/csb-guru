@@ -282,20 +282,25 @@ public class AppServiceImpl2 implements AppService2 {
 
 				if (provider == null) {
 						throw new CSBException(Status.BAD_REQUEST, "Chosen PaaS provider does not exist.");
+				} else {
+					logger.info("Deploying app {} to PaaS {}...", app.getId(), provider.getId());
 				}
 				
 				app.setDeployState(DeployState.DEPLOYING);
 				em.persist(app);
 				
 				if (app.getProvider() == null) {
+					logger.info("First app {} deploy (provider is still unset). Let's create the app in the PaaS {} first...", app.getId(), provider.getId());
 					// app is not yet created in the PaaS Manager. create it first!
 					cResponse = pps.createApp(appId, manifest.getProvider(), manifest.getFramework());
+					logger.info("Created app {} in PaaS {}", app.getId(), provider.getId());
 				}
 
 				// deploy!
 				File zipFile = acm2.zipRepository(getAcm2().getRepository(appId, app.getRepositoryType()));
 				try {
 					InputStream is = new FileInputStream(zipFile);
+					logger.info("Deploying app {} to PaaS {}", app.getId(), provider.getId());
 					cResponse = pps.deployApp(appId, is);
 					is.close();
 				} catch (IOException e) {
@@ -310,6 +315,7 @@ public class AppServiceImpl2 implements AppService2 {
 				provider = em.find(PaasProvider.class, cResponse.getPaasProvider());
 				if (provider == null) {
 					// provider doesn't exist yet in database. insert it!
+					logger.debug("provider {} doesn't exist yet in database. insert it!", cResponse.getPaasProvider());
 					provider = new PaasProvider();
 					provider.setId(cResponse.getPaasProvider());
 					em.persist(provider);
@@ -320,6 +326,7 @@ public class AppServiceImpl2 implements AppService2 {
 				app.setUrl(cResponse.getAppUrl());
 				app.setDeployState(DeployState.DEPLOYED);
 				em.persist(app);
+				logger.info("App {} successfully deployed to PaaS {}", app.getId(), provider.getId());
 			}
 
 			return Response.status(Status.ACCEPTED).build();
@@ -395,7 +402,7 @@ public class AppServiceImpl2 implements AppService2 {
 	@Override
 	public Response deleteApp(SecurityContext ctx, String appId) {
 		try {
-
+			logger.debug("Deleting app id {}", appId);
 			App app = em.find(App.class, appId);
 
 			if (app == null) {
@@ -408,7 +415,10 @@ public class AppServiceImpl2 implements AppService2 {
 				pps.deleteApp(appId);
 			}
 			
-			getAcm2().deleteRepository(appId);
+			logger.debug("Deleting repository of app ID" + appId);
+			Repository repository = getAcm2().getRepository(appId, app.getRepositoryType());
+			getAcm2().deleteRepository(repository);
+			logger.debug("Done deleting repository of app ID" + appId);
 			em.remove(app);
 
 			return Response.ok().build();

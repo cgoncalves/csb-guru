@@ -158,7 +158,7 @@ public class CsbOAuthProviderImpl implements CsbOAuthProvider {
 				throw new OAuthException(HttpURLConnection.HTTP_UNAUTHORIZED, "No such consumer key " + consumerKey);
 			}
 		} catch (SQLException ex) {
-			logger.error("2");
+			logger.error("2: "+ ex.getMessage());
 			throw new OAuthException(HttpURLConnection.HTTP_UNAUTHORIZED, "No such consumer key " + consumerKey);
 		}
 	}
