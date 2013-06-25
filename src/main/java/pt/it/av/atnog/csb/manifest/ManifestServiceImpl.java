@@ -55,9 +55,9 @@ public class ManifestServiceImpl implements ManifestService {
 		Manifest manifest = new Manifest();
 		manifest.setProvider("Heroku");
 		List<Rule> rules = new ArrayList<Rule>();
-		rules.add(new Rule("runtime", "ruby_1_9_2"));
-		rules.add(new Rule("framework", "rails_3_1"));
-		rules.add(new Rule("service", "redis_2_2"));
+		rules.add(new Rule("runtime", "JAVA_1_6"));
+		rules.add(new Rule("framework", "GRAILS"));
+		rules.add(new Rule("service", "MONGODB_1_8"));
 //		rules.add(new Rule("service", "postgresql", "greater", "9.0"));
 		rules.add(new Rule("metric", "usage_cpu"));
 		rules.add(new Rule("metric", "memory"));

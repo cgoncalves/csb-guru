@@ -72,6 +72,7 @@ public class RuleEngineRunner {
 		if (initialProvidersIn == null || initialProvidersIn.isEmpty()) {
 			throw new Exception("Initial providers list is uninitialized or empty");
 		}
+		
 
 		Query q;
 		Term[] terms;

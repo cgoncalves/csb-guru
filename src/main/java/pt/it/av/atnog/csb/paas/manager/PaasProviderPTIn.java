@@ -135,8 +135,23 @@ public class PaasProviderPTIn implements PaasProviderService {
 		List<PMPaasProvider> pmpps = response.getEntity().getPaasProviders();
 		List<PrivatePaas> privatePaasList = new PrivatePaasManager().offerings(em);
 		List<PaasProvider> pps = new ArrayList<PaasProvider>();
-		pps.addAll(convertToPaasProviders(pmpps));
-		pps.addAll(privatePaasList);
+		List<PaasProvider> providers = convertToPaasProviders(pmpps);
+		pps.addAll(providers);
+		boolean add;
+		for (PrivatePaas pp : privatePaasList) {
+			add = true;
+			for (PaasProvider p : providers) {
+				if (p.getId().equals(pp.getId())) {
+					add = false;
+					break;
+				}
+			}
+			
+			if (add) {
+				pps.add(pp);
+			}
+		}
+		
 		return pps;
 	}
 
@@ -277,6 +292,7 @@ public class PaasProviderPTIn implements PaasProviderService {
 	@Override
 	public PMApplicationInfoResponse infoApp(String appId) {
 		String uri = getUriByQuery(pmInfoAppUri, appId);
+		logger.debug("APP INFO URL: {}", uri);
 		try {
 			return getUri(PMApplicationInfoResponse.class, uri);
 		} catch (Exception e) {

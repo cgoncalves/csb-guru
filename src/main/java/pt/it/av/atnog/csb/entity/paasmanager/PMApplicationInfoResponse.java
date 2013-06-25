@@ -9,192 +9,181 @@ import javax.xml.bind.annotation.XmlElementWrapper;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlType;
 
-import org.codehaus.jackson.annotate.JsonAutoDetect;
-import org.codehaus.jackson.annotate.JsonProperty;
-import org.codehaus.jackson.annotate.JsonAutoDetect.Visibility;
+import pt.it.av.atnog.csb.entity.csb.Memory;
 
 
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "", propOrder = { "providerId", "id", "status", "url", "memory", "instances",
-        "frameworkId", "servicesId" })
+@XmlType(name = "", propOrder = { "paasProvider", "appID", "appStatus", "appUrl", "appMemory", "appInstances",
+        "appFramework", "appServicesId" })
 @XmlRootElement(name = "ApplicationInfoResponse")
-@JsonAutoDetect(getterVisibility=Visibility.NONE)
 public class PMApplicationInfoResponse {
 
 	@XmlElement(required = true)
-	@JsonProperty("provider_id")
-	private String providerId;
+	private String paasProvider;
 	
 	@XmlElement(required = true)
-	@JsonProperty("id")
-	private String id;
+	private String appID;
 	
 	@XmlElement(required = true)
-	@JsonProperty("status")
-	private String status;
+	private String appStatus;
 	
 	@XmlElement(required = true)
-	@JsonProperty("url")
-	private String url;
+	private String appUrl;
 	
 	@XmlElement(required = true)
-	@JsonProperty("memory")
-	private PMAppMemory memory;
+	private PMAppMemory appMemory;
 	
 	@XmlElement(required = true)
-	@JsonProperty("instances")
-	private int instances;
+	private int appInstances;
 	
 	@XmlElement(required = true)
-	@JsonProperty("framework_id")
-	private String frameworkId;
+	private String appFramework;
 	
-	@XmlElementWrapper(name = "services", required = true)
-	@XmlElement(name = "service_id")
-	@JsonProperty("services_id")
-	private List<String> servicesId;
+	@XmlElementWrapper(name = "appServices", required = true)
+	@XmlElement(name = "serviceID")
+	private List<String> appServicesId;
 
 	public PMApplicationInfoResponse() {
 
 	}
 
-	public PMApplicationInfoResponse(String id) {
-		this.id = id;
+	public PMApplicationInfoResponse(String appId) {
+		this.appID = appId;
 	}
 
 	/**
-	 * Gets the value of the providerId property.
+	 * Gets the value of the paasProvider property.
 	 * 
 	 * @return possible object is {@link String }
 	 */
-	public String getProvider() {
-		return providerId;
+	public String getPaasProvider() {
+		return paasProvider;
 	}
 
 	/**
-	 * Sets the value of the providerId property.
+	 * Sets the value of the paasProvider property.
 	 * 
-	 * @param providerId
+	 * @param value
 	 *            allowed object is {@link String }
 	 */
-	public void setProviderId(String providerId) {
-		this.providerId = providerId;
+	public void setPaasProvider(String value) {
+		this.paasProvider = value;
 	}
 
 	/**
-	 * Gets the value of the id property.
+	 * Gets the value of the appID property.
 	 * 
 	 * @return possible object is {@link String }
 	 */
-	public String getId() {
-		return id;
+	public String getAppID() {
+		return appID;
 	}
 
 	/**
-	 * Sets the value of the id property.
+	 * Sets the value of the appID property.
 	 * 
-	 * @param id
+	 * @param value
 	 *            allowed object is {@link String }
 	 */
-	public void setId(String id) {
-		this.id = id;
+	public void setAppID(String value) {
+		this.appID = value;
 	}
 
 	/**
-	 * Gets the value of the status property.
+	 * Gets the value of the appStatus property.
 	 * 
 	 * @return possible object is {@link String }
 	 */
-	public String getStatus() {
-		return status;
+	public String getAppStatus() {
+		return appStatus;
 	}
 
 	/**
-	 * Sets the value of the status property.
+	 * Sets the value of the appStatus property.
 	 * 
-	 * @param status
+	 * @param value
 	 *            allowed object is {@link String }
 	 */
-	public void setStatus(String status) {
-		this.status = status;
+	public void setAppStatus(String value) {
+		this.appStatus = value;
 	}
 
 	/**
-	 * Gets the value of the url property.
+	 * Gets the value of the appUrl property.
 	 * 
 	 * @return possible object is {@link String }
 	 */
-	public String getUrl() {
-		return url;
+	public String getAppUrl() {
+		return appUrl;
 	}
 
 	/**
-	 * Sets the value of the url property.
+	 * Sets the value of the appUrl property.
 	 * 
-	 * @param url
+	 * @param value
 	 *            allowed object is {@link String }
 	 */
-	public void setUrl(String url) {
-		this.url = url;
+	public void setAppUrl(String value) {
+		this.appUrl = value;
 	}
 
 	/**
-	 * @return the memory
+	 * @return the appMemory
 	 */
-	public final PMAppMemory getMemory() {
-		return memory;
+	public final PMAppMemory getAppMemory() {
+		return appMemory;
 	}
 
 	/**
-	 * @param memory
-	 *            the memory to set
+	 * @param appMemory
+	 *            the appMemory to set
 	 */
-	public final void setMemory(PMAppMemory memory) {
-		this.memory = memory;
+	public final void setAppMemory(PMAppMemory appMemory) {
+		this.appMemory = appMemory;
 	}
 
 	/**
-	 * @return the instances
+	 * @return the appInstances
 	 */
-	public final int getInstances() {
-		return instances;
+	public final int getAppInstances() {
+		return appInstances;
 	}
 
 	/**
-	 * @param instances
-	 *            the instances to set
+	 * @param appInstances
+	 *            the appInstances to set
 	 */
-	public final void setInstances(int instances) {
-		this.instances = instances;
+	public final void setAppInstances(int appInstances) {
+		this.appInstances = appInstances;
 	}
 
 	/**
-	 * @return the frameworkId
+	 * @return the appFramework
 	 */
-	public final String getFrameworkId() {
-		return frameworkId;
+	public final String getAppFramework() {
+		return appFramework;
 	}
 
 	/**
-	 * @param frameworkId
-	 *            the frameworkId to set
+	 * @param appFramework
+	 *            the appFramework to set
 	 */
-	public final void setFrameworkId(String frameworkId) {
-		this.frameworkId = frameworkId;
+	public final void setAppFramework(String appStack) {
+		this.appFramework = appStack;
 	}
 
 	/**
-	 * @return the servicesId
+	 * @return the appServicesId
 	 */
-	public final List<String> getServicesId() {
-		return servicesId;
+	public final List<String> getAppServicesId() {
+		return appServicesId;
 	}
 
 	/**
-	 * @param servicesId
-	 *            the servicesId to set
+	 * @param appServicesId
+	 *            the appServicesId to set
 	 */
-	public final void setServicesId(List<String> servicesId) {
-		this.servicesId = servicesId;
+	public final void setAppServicesId(List<String> appServicesId) {
+		this.appServicesId = appServicesId;
 	}
 }

@@ -140,14 +140,20 @@ public class AppServiceImpl2 implements AppService2 {
 
 			try {
 				PMApplicationInfoResponse info = infoApp(ctx, appId);
-				app.setStatus(info.getStatus());
-				app.setInstances(info.getInstances());
-				app.setFrameworkId(info.getFrameworkId());
+				app.setStatus(statusApp(ctx, app.getId()).getAppStatus());
+				try {
+					app.setStatus(statusApp(ctx, app.getId()).getAppStatus());
+				} catch (Exception e) {
+					// most likely the app doesn't exist in the PaasM yet. ignore!
+				}
+				
+				app.setInstances(info.getAppInstances());
+				app.setFrameworkId(info.getAppFramework());
 				Memory memory = new Memory();
-				memory.setValue(info.getMemory().getValue());
-				memory.setUnit(info.getMemory().getUnit());
+				memory.setValue(info.getAppMemory().getValue());
+				memory.setUnit(info.getAppMemory().getUnit());
 				app.setMemory(memory);
-				app.setServicesId(info.getServicesId());
+				app.setServicesId(info.getAppServicesId());
 			} catch (Exception e) {
 				// most likely the app doesn't exist in the PaasM yet. ignore!
 			}
@@ -292,8 +298,12 @@ public class AppServiceImpl2 implements AppService2 {
 				if (app.getProvider() == null) {
 					logger.info("First app {} deploy (provider is still unset). Let's create the app in the PaaS {} first...", app.getId(), provider.getId());
 					// app is not yet created in the PaaS Manager. create it first!
-					cResponse = pps.createApp(appId, manifest.getProvider(), manifest.getFramework());
-					logger.info("Created app {} in PaaS {}", app.getId(), provider.getId());
+					try {
+						cResponse = pps.createApp(appId, manifest.getProvider(), manifest.getFramework());
+						logger.info("Created app {} in PaaS {}", app.getId(), provider.getId());
+					} catch (Exception e) {
+						logger.info("App is already created in the chosen PaaS. Skipping..");
+					}
 				}
 
 				// deploy!
@@ -308,9 +318,8 @@ public class AppServiceImpl2 implements AppService2 {
 					throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Error with intput stream");
 				} finally {
 					zipFile.delete();
-						
 				}
-	
+
 				// by this time the app was successfully created and deployed
 				provider = em.find(PaasProvider.class, cResponse.getPaasProvider());
 				if (provider == null) {
@@ -488,16 +497,16 @@ public class AppServiceImpl2 implements AppService2 {
 			try {
 				PaasProviderService pps = new PaasProviderPTIn();
 				response = pps.infoApp(appId);
-				response.setUrl(em.find(App.class, appId).getUrl());
+				response.setAppUrl(em.find(App.class, appId).getUrl());
 			} catch (ConfigurationException e) {
 				e.printStackTrace();
 				throw new CSBException(Status.INTERNAL_SERVER_ERROR, "Internal server error while getting app info.");
 			}
 		} else {
 			response = new PMApplicationInfoResponse(appId);
-			response.setInstances(0);
-			response.setStatus(APP_STATUS.CREATED.toString());
-			response.setUrl(getAppUrl(appId));
+			response.setAppInstances(0);
+			response.setAppStatus(APP_STATUS.CREATED.toString());
+			response.setAppUrl(getAppUrl(appId));
 		}
 
 		return response;

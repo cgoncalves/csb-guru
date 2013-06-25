@@ -78,7 +78,7 @@ public class PrivatePaasManager {
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
-
+		
 		return providers;
 	}
 

@@ -27,7 +27,8 @@ public class KnowledgeBase {
 
 	public static void main(String args[]) {
 		ClientRequestFactory cFactory = new ClientRequestFactory();
-		ClientRequest request = cFactory.createRequest("http://localhost:8080/csb/rest/paas/offerings");
+		ClientRequest request = cFactory.createRequest("http://10.115.1.19:8080/csb/rest/paas/offerings");
+		request.header("Authorization", "Basic Y2dvbmNhbHZlczpxd2VydHkxMjM=");
 		request.accept(MediaType.APPLICATION_XML);
 		ClientResponse<List<PaasProvider>> response;
 
